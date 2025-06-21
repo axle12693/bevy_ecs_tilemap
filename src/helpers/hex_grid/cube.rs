@@ -1,10 +1,7 @@
 //! Code for the cube coordinate system
 
-use crate::{
-    helpers::hex_grid::axial::{AxialPos, FractionalAxialPos},
-    tiles::TilePos,
-};
-use std::ops::{Add, Mul, Sub};
+use crate::{ helpers::hex_grid::axial::{ AxialPos, FractionalAxialPos }, tiles::TilePos };
+use std::ops::{ Add, Mul, Sub };
 
 /// Identical to [`AxialPos`], but has an extra component `s`. Together, `q`, `r`, `s`
 /// satisfy the identity: `q + r + s = 0`.
@@ -173,5 +170,47 @@ impl FractionalCubePos {
         };
 
         CubePos { q, r, s }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::helpers::hex_grid::axial::{ AxialPos };
+
+    #[test]
+    fn axial_to_cube_preserves_identity() {
+        let axial = AxialPos { q: 2, r: -3 };
+        let cube: CubePos = axial.into();
+        assert_eq!(cube.q + cube.r + cube.s, 0, "q + r + s must be 0");
+    }
+
+    #[test]
+    fn cube_add_sub_behave_like_vectors() {
+        let a = CubePos::new(1, -2, 1);
+        let b = CubePos::new(2, 1, -3);
+
+        assert_eq!(a + b, CubePos::new(3, -1, -2));
+        assert_eq!(a - b, CubePos::new(-1, -3, 4));
+        // Add with reference
+        assert_eq!(a + &b, CubePos::new(3, -1, -2));
+    }
+
+    #[test]
+    fn scalar_multiplication_works_for_i32_and_u32() {
+        let v = CubePos::new(1, -2, 1);
+        assert_eq!(3_i32 * v, CubePos::new(3, -6, 3));
+        assert_eq!(3_u32 * v, CubePos::new(3, -6, 3));
+    }
+
+    #[test]
+    fn fractional_rounding_gives_containing_hex() {
+        // Point very close to (1,-1,0) but with largest delta on q
+        let frac = FractionalCubePos::new(1.49, -1.1, -0.39);
+        assert_eq!(frac.round(), CubePos::new(1, -1, 0));
+
+        // Point inside origin hex
+        let frac2 = FractionalCubePos::new(0.2, -0.1, -0.1);
+        assert_eq!(frac2.round(), CubePos::new(0, 0, 0));
     }
 }

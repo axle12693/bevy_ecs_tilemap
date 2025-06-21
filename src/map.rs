@@ -1,17 +1,20 @@
 use bevy::{
     asset::Assets,
-    ecs::{
-        entity::{EntityMapper, MapEntities},
-        reflect::ReflectMapEntities,
-    },
-    math::{UVec2, Vec2},
+    ecs::{ entity::{ EntityMapper, MapEntities }, reflect::ReflectMapEntities },
+    math::{ UVec2, Vec2 },
     prelude::{
-        Component, Deref, DerefMut, Entity, Handle, Image, Reflect, ReflectComponent, Res, ResMut,
+        Component,
+        Deref,
+        DerefMut,
+        Entity,
+        Handle,
+        Image,
+        Reflect,
+        ReflectComponent,
+        Res,
+        ResMut,
     },
-    render::{
-        render_resource::TextureUsages,
-        view::{VisibilityClass, add_visibility_class},
-    },
+    render::{ render_resource::TextureUsages, view::{ VisibilityClass, add_visibility_class } },
 };
 use std::ops::Add;
 
@@ -178,16 +181,15 @@ impl TilemapTexture {
         }
 
         #[cfg(not(feature = "atlas"))]
-        self.image_handles().into_iter().all(|h| {
-            if let Some(image) = images.get(h) {
-                image
-                    .texture_descriptor
-                    .usage
-                    .contains(TextureUsages::COPY_SRC)
-            } else {
-                false
-            }
-        })
+        self.image_handles()
+            .into_iter()
+            .all(|h| {
+                if let Some(image) = images.get(h) {
+                    image.texture_descriptor.usage.contains(TextureUsages::COPY_SRC)
+                } else {
+                    false
+                }
+            })
     }
 
     /// Sets images with the `COPY_SRC` flag.
@@ -196,15 +198,12 @@ impl TilemapTexture {
             // NOTE: We retrieve it non-mutably first to avoid triggering an `AssetEvent::Modified`
             // if we didn't actually need to modify it
             if let Some(image) = images.get(handle) {
-                if !image
-                    .texture_descriptor
-                    .usage
-                    .contains(TextureUsages::COPY_SRC)
-                {
+                if !image.texture_descriptor.usage.contains(TextureUsages::COPY_SRC) {
                     if let Some(image) = images.get_mut(handle) {
-                        image.texture_descriptor.usage = TextureUsages::TEXTURE_BINDING
-                            | TextureUsages::COPY_SRC
-                            | TextureUsages::COPY_DST;
+                        image.texture_descriptor.usage =
+                            TextureUsages::TEXTURE_BINDING |
+                            TextureUsages::COPY_SRC |
+                            TextureUsages::COPY_DST;
                     };
                 }
             }
@@ -216,7 +215,12 @@ impl TilemapTexture {
             TilemapTexture::Single(handle) => TilemapTexture::Single(handle.clone_weak()),
             #[cfg(not(feature = "atlas"))]
             TilemapTexture::Vector(handles) => {
-                TilemapTexture::Vector(handles.iter().map(|h| h.clone_weak()).collect())
+                TilemapTexture::Vector(
+                    handles
+                        .iter()
+                        .map(|h| h.clone_weak())
+                        .collect()
+                )
             }
             #[cfg(not(feature = "atlas"))]
             TilemapTexture::TextureContainer(handle) => {
@@ -510,49 +514,89 @@ mod tests {
     }
     #[test]
     fn add_tilemap_tile_size() {
-        let a = TilemapTileSize { x: 2., y: 2. };
-        let b = TilemapTileSize { x: 3., y: 3. };
-        assert_eq!(a + b, TilemapTileSize { x: 5., y: 5. });
+        let a = TilemapTileSize { x: 2.0, y: 2.0 };
+        let b = TilemapTileSize { x: 3.0, y: 3.0 };
+        assert_eq!(a + b, TilemapTileSize { x: 5.0, y: 5.0 });
     }
     #[test]
     fn add_tilemap_tile_size_vec2() {
-        let a = TilemapTileSize { x: 2., y: 2. };
-        let b = Vec2 { x: 3., y: 3. };
-        assert_eq!(a + b, TilemapTileSize { x: 5., y: 5. });
+        let a = TilemapTileSize { x: 2.0, y: 2.0 };
+        let b = Vec2 { x: 3.0, y: 3.0 };
+        assert_eq!(a + b, TilemapTileSize { x: 5.0, y: 5.0 });
     }
     #[test]
     fn add_tilemap_grid_size() {
-        let a = TilemapGridSize { x: 2., y: 2. };
-        let b = TilemapGridSize { x: 3., y: 3. };
-        assert_eq!(a + b, TilemapGridSize { x: 5., y: 5. });
+        let a = TilemapGridSize { x: 2.0, y: 2.0 };
+        let b = TilemapGridSize { x: 3.0, y: 3.0 };
+        assert_eq!(a + b, TilemapGridSize { x: 5.0, y: 5.0 });
     }
     fn add_tilemap_grid_size_vec2() {
-        let a = TilemapGridSize { x: 2., y: 2. };
-        let b = Vec2 { x: 3., y: 3. };
-        assert_eq!(a + b, TilemapGridSize { x: 5., y: 5. });
+        let a = TilemapGridSize { x: 2.0, y: 2.0 };
+        let b = Vec2 { x: 3.0, y: 3.0 };
+        assert_eq!(a + b, TilemapGridSize { x: 5.0, y: 5.0 });
     }
     #[test]
     fn add_tilemap_spacing() {
-        let a = TilemapSpacing { x: 2., y: 2. };
-        let b = TilemapSpacing { x: 3., y: 3. };
-        assert_eq!(a + b, TilemapSpacing { x: 5., y: 5. });
+        let a = TilemapSpacing { x: 2.0, y: 2.0 };
+        let b = TilemapSpacing { x: 3.0, y: 3.0 };
+        assert_eq!(a + b, TilemapSpacing { x: 5.0, y: 5.0 });
     }
     #[test]
     fn add_tilemap_spacing_vec2() {
-        let a = TilemapSpacing { x: 2., y: 2. };
-        let b = Vec2 { x: 3., y: 3. };
-        assert_eq!(a + b, TilemapSpacing { x: 5., y: 5. });
+        let a = TilemapSpacing { x: 2.0, y: 2.0 };
+        let b = Vec2 { x: 3.0, y: 3.0 };
+        assert_eq!(a + b, TilemapSpacing { x: 5.0, y: 5.0 });
     }
     #[test]
     fn add_tilemap_texture_size() {
-        let a = TilemapTextureSize { x: 2., y: 2. };
-        let b = TilemapTextureSize { x: 3., y: 3. };
-        assert_eq!(a + b, TilemapTextureSize { x: 5., y: 5. });
+        let a = TilemapTextureSize { x: 2.0, y: 2.0 };
+        let b = TilemapTextureSize { x: 3.0, y: 3.0 };
+        assert_eq!(a + b, TilemapTextureSize { x: 5.0, y: 5.0 });
     }
     #[test]
     fn add_tilemap_texture_size_vec2() {
-        let a = TilemapTextureSize { x: 2., y: 2. };
-        let b = Vec2 { x: 3., y: 3. };
-        assert_eq!(a + b, TilemapTextureSize { x: 5., y: 5. });
+        let a = TilemapTextureSize { x: 2.0, y: 2.0 };
+        let b = Vec2 { x: 3.0, y: 3.0 };
+        assert_eq!(a + b, TilemapTextureSize { x: 5.0, y: 5.0 });
+    }
+    #[test]
+    fn tilemap_size_count_and_conversions() {
+        let size = TilemapSize::new(4, 5);
+        assert_eq!(size.count(), 20);
+
+        // TilemapSize ➜ Vec2
+        let v: Vec2 = size.into();
+        assert_eq!(v, Vec2::new(4.0, 5.0));
+
+        // TilemapSize ➜ UVec2 ➜ TilemapSize
+        let uv: UVec2 = size.into();
+        assert_eq!(uv, UVec2::new(4, 5));
+        let size2: TilemapSize = uv.into();
+        assert_eq!(size2, size);
+    }
+
+    #[test]
+    fn tilemap_tile_size_conversions() {
+        let ts = TilemapTileSize::new(16.0, 32.0);
+
+        // TilemapTileSize ➜ Vec2
+        let v: Vec2 = ts.into();
+        assert_eq!(v, Vec2::new(16.0, 32.0));
+
+        // TilemapTileSize ➜ TilemapGridSize
+        let gs: TilemapGridSize = ts.into();
+        assert_eq!(gs, TilemapGridSize::new(16.0, 32.0));
+    }
+
+    #[test]
+    fn tilemap_spacing_zero_is_zero() {
+        assert_eq!(TilemapSpacing::zero(), TilemapSpacing::new(0.0, 0.0));
+    }
+
+    #[test]
+    fn defaults_match_contract() {
+        let settings = TilemapRenderSettings::default();
+        assert_eq!(settings.render_chunk_size, CHUNK_SIZE_2D);
+        assert!(!settings.y_sort);
     }
 }

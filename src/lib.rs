@@ -18,8 +18,21 @@
 use bevy::{
     ecs::schedule::IntoScheduleConfigs,
     prelude::{
-        Bundle, Changed, Component, Deref, First, GlobalTransform, InheritedVisibility, Plugin,
-        Query, Reflect, ReflectComponent, SystemSet, Transform, ViewVisibility, Visibility,
+        Bundle,
+        Changed,
+        Component,
+        Deref,
+        First,
+        GlobalTransform,
+        InheritedVisibility,
+        Plugin,
+        Query,
+        Reflect,
+        ReflectComponent,
+        SystemSet,
+        Transform,
+        ViewVisibility,
+        Visibility,
     },
     render::sync_world::SyncToRenderWorld,
     time::TimeSystem,
@@ -30,19 +43,30 @@ use render::material::MaterialTilemapHandle;
 
 use anchor::TilemapAnchor;
 use map::{
-    TilemapGridSize, TilemapSize, TilemapSpacing, TilemapTexture, TilemapTextureSize,
-    TilemapTileSize, TilemapType,
+    TilemapGridSize,
+    TilemapSize,
+    TilemapSpacing,
+    TilemapTexture,
+    TilemapTextureSize,
+    TilemapTileSize,
+    TilemapType,
 };
-use prelude::{TilemapId, TilemapRenderSettings};
+use prelude::{ TilemapId, TilemapRenderSettings };
 #[cfg(feature = "render")]
-use render::material::{MaterialTilemap, StandardTilemapMaterial};
+use render::material::{ MaterialTilemap, StandardTilemapMaterial };
 use tiles::{
-    AnimatedTile, TileColor, TileFlip, TilePos, TilePosOld, TileStorage, TileTextureIndex,
+    AnimatedTile,
+    TileColor,
+    TileFlip,
+    TilePos,
+    TilePosOld,
+    TileStorage,
+    TileTextureIndex,
     TileVisible,
 };
 
 #[cfg(all(not(feature = "atlas"), feature = "render"))]
-use bevy::render::{ExtractSchedule, RenderApp};
+use bevy::render::{ ExtractSchedule, RenderApp };
 
 pub mod anchor;
 /// A module that allows pre-loading of atlases into array textures.
@@ -198,5 +222,16 @@ pub mod prelude {
 fn update_changed_tile_positions(mut query: Query<(&TilePos, &mut TilePosOld), Changed<TilePos>>) {
     for (tile_pos, mut tile_pos_old) in query.iter_mut() {
         tile_pos_old.0 = *tile_pos;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn frustum_culling_default_is_true() {
+        let fc = FrustumCulling::default();
+        assert!(fc.0, "FrustumCulling::default() should be true");
     }
 }

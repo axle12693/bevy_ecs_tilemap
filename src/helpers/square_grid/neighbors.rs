@@ -1,9 +1,9 @@
 use crate::helpers::square_grid::SquarePos;
 use crate::helpers::square_grid::staggered::StaggeredPos;
 use crate::map::TilemapSize;
-use crate::prelude::{TilePos, TileStorage};
+use crate::prelude::{ TilePos, TileStorage };
 use bevy::prelude::Entity;
-use std::ops::{Add, Sub};
+use std::ops::{ Add, Sub };
 
 /// The eight directions in which a neighbor may lie, on a square-like grid.
 ///
@@ -104,7 +104,7 @@ impl Add<u32> for SquareDirection {
     type Output = SquareDirection;
 
     fn add(self, rhs: u32) -> Self::Output {
-        ((self as usize) + rhs as usize).into()
+        ((self as usize) + (rhs as usize)).into()
     }
 }
 
@@ -136,7 +136,7 @@ impl Sub<u32> for SquareDirection {
     type Output = SquareDirection;
 
     fn sub(self, rhs: u32) -> Self::Output {
-        ((self as usize) - rhs as usize).into()
+        ((self as usize) - (rhs as usize)).into()
     }
 }
 
@@ -232,9 +232,7 @@ impl<T> Neighbors<T> {
     ///
     /// If a neighbor is `None`, this iterator will skip it.
     pub fn iter(&self) -> impl Iterator<Item = &'_ T> + '_ {
-        SQUARE_DIRECTIONS
-            .into_iter()
-            .filter_map(|direction| self.get(direction))
+        SQUARE_DIRECTIONS.into_iter().filter_map(|direction| self.get(direction))
     }
 
     /// Iterate over neighbors, in the order specified by [`SQUARE_DIRECTIONS`].
@@ -242,17 +240,14 @@ impl<T> Neighbors<T> {
     ///
     /// If a neighbor is `None`, this iterator will skip it.
     pub fn iter_with_direction(&self) -> impl Iterator<Item = (SquareDirection, &'_ T)> + '_ {
-        SQUARE_DIRECTIONS
-            .into_iter()
-            .filter_map(|direction| self.get(direction).map(|value| (direction, value)))
+        SQUARE_DIRECTIONS.into_iter().filter_map(|direction|
+            self.get(direction).map(|value| (direction, value))
+        )
     }
 
     /// Applies the supplied closure `f` with an [`and_then`](std::option::Option::and_then) to each
     /// neighbor element, where `f` takes `T` by value.
-    pub fn and_then<U, F>(self, f: F) -> Neighbors<U>
-    where
-        F: Fn(T) -> Option<U>,
-    {
+    pub fn and_then<U, F>(self, f: F) -> Neighbors<U> where F: Fn(T) -> Option<U> {
         Neighbors {
             east: self.east.and_then(&f),
             north_east: self.north_east.and_then(&f),
@@ -267,10 +262,7 @@ impl<T> Neighbors<T> {
 
     /// Applies the supplied closure `f` with an [`and_then`](std::option::Option::and_then) to each
     /// neighbor element, where `f` takes `T` by reference.
-    pub fn and_then_ref<'a, U, F>(&'a self, f: F) -> Neighbors<U>
-    where
-        F: Fn(&'a T) -> Option<U>,
-    {
+    pub fn and_then_ref<'a, U, F>(&'a self, f: F) -> Neighbors<U> where F: Fn(&'a T) -> Option<U> {
         Neighbors {
             east: self.east.as_ref().and_then(&f),
             north_east: self.north_east.as_ref().and_then(&f),
@@ -285,10 +277,7 @@ impl<T> Neighbors<T> {
 
     /// Applies the supplied closure `f` with a [`map`](std::option::Option::map) to each
     /// neighbor element, where `f` takes `T` by reference.
-    pub fn map_ref<'a, U, F>(&'a self, f: F) -> Neighbors<U>
-    where
-        F: Fn(&'a T) -> U,
-    {
+    pub fn map_ref<'a, U, F>(&'a self, f: F) -> Neighbors<U> where F: Fn(&'a T) -> U {
         Neighbors {
             east: self.east.as_ref().map(&f),
             north_east: self.north_east.as_ref().map(&f),
@@ -304,8 +293,7 @@ impl<T> Neighbors<T> {
     /// Generates `SquareNeighbors<T>` from a closure that takes a hex direction and outputs
     /// `Option<T>`.
     pub fn from_directional_closure<F>(f: F) -> Neighbors<T>
-    where
-        F: Fn(SquareDirection) -> Option<T>,
+        where F: Fn(SquareDirection) -> Option<T>
     {
         use SquareDirection::*;
         Neighbors {
@@ -343,12 +331,12 @@ impl Neighbors<TilePos> {
     pub fn get_square_neighboring_positions(
         tile_pos: &TilePos,
         map_size: &TilemapSize,
-        include_diagonals: bool,
+        include_diagonals: bool
     ) -> Neighbors<TilePos> {
         let square_pos = SquarePos::from(tile_pos);
         if include_diagonals {
-            let f =
-                |direction: SquareDirection| square_pos.offset(&direction).as_tile_pos(map_size);
+            let f = |direction: SquareDirection|
+                square_pos.offset(&direction).as_tile_pos(map_size);
 
             Neighbors::from_directional_closure(f)
         } else {
@@ -372,12 +360,12 @@ impl Neighbors<TilePos> {
     pub fn get_staggered_neighboring_positions(
         tile_pos: &TilePos,
         map_size: &TilemapSize,
-        include_diagonals: bool,
+        include_diagonals: bool
     ) -> Neighbors<TilePos> {
         let staggered_pos = StaggeredPos::from(tile_pos);
         if include_diagonals {
-            let f =
-                |direction: SquareDirection| staggered_pos.offset(&direction).as_tile_pos(map_size);
+            let f = |direction: SquareDirection|
+                staggered_pos.offset(&direction).as_tile_pos(map_size);
 
             Neighbors::from_directional_closure(f)
         } else {
@@ -397,5 +385,87 @@ impl Neighbors<TilePos> {
     pub fn entities(&self, tile_storage: &TileStorage) -> Neighbors<Entity> {
         let f = |tile_pos| tile_storage.get(tile_pos);
         self.and_then_ref(f)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn cardinal_and_diagonal_flags() {
+        for d in CARDINAL_SQUARE_DIRECTIONS {
+            assert!(d.is_cardinal());
+            assert!(!d.is_diagonal());
+        }
+
+        for d in SQUARE_DIRECTIONS {
+            if !d.is_cardinal() {
+                assert!(d.is_diagonal());
+            }
+        }
+    }
+
+    #[test]
+    fn squarepos_from_direction_is_offset_lookup() {
+        for d in SQUARE_DIRECTIONS {
+            assert_eq!(SquarePos::from(d), SQUARE_OFFSETS[d as usize]);
+        }
+    }
+
+    #[test]
+    fn set_get_get_mut_iter_variants() {
+        let mut n = Neighbors::<i32>::default();
+
+        // nothing set yet
+        assert!(n.east.is_none());
+        assert_eq!(n.iter().count(), 0);
+
+        // set a couple of values
+        n.set(SquareDirection::East, 10);
+        n.set(SquareDirection::SouthWest, 42);
+
+        // get / get_mut
+        assert_eq!(n.get(SquareDirection::East), Some(&10));
+        if let Some(x) = n.get_inner_mut(SquareDirection::East) {
+            *x += 1;
+        }
+        assert_eq!(n.get(SquareDirection::East), Some(&11));
+
+        // iterator order obeys SQUARE_DIRECTIONS
+        let items: Vec<_> = n.iter().copied().collect();
+        assert_eq!(items, vec![11, 42]);
+
+        // iter_with_direction gives the same ordering and pairs
+        let pairs: Vec<_> = n.iter_with_direction().collect();
+        assert_eq!(pairs, vec![(SquareDirection::East, &11), (SquareDirection::SouthWest, &42)]);
+    }
+
+    #[test]
+    fn map_and_and_then_variants() {
+        let n = Neighbors {
+            east: Some(1u8),
+            west: Some(2u8),
+            ..Default::default()
+        };
+
+        // map_ref
+        let doubled = n.map_ref(|x| x * 2);
+        assert_eq!(doubled.east, Some(2));
+        assert_eq!(doubled.west, Some(4));
+        assert!(doubled.north.is_none());
+
+        // and_then (by value)
+        let filtered = n.and_then(|x| if x % 2 == 0 { Some(x) } else { None });
+        assert_eq!(filtered.east, None);
+        assert_eq!(filtered.west, Some(2));
+    }
+
+    #[test]
+    fn from_directional_closure_is_exhaustive() {
+        let n = Neighbors::<u8>::from_directional_closure(|d| Some(d as u8));
+        for d in SQUARE_DIRECTIONS {
+            assert_eq!(n.get(d), Some(&(d as u8)));
+        }
     }
 }

@@ -1,11 +1,11 @@
 use crate::helpers::hex_grid::axial::AxialPos;
-use crate::helpers::hex_grid::neighbors::{HEX_DIRECTIONS, HexDirection};
+use crate::helpers::hex_grid::neighbors::{ HEX_DIRECTIONS, HexDirection };
 use crate::map::TilemapId;
 use crate::prelude::HexCoordSystem;
-use crate::tiles::{TileBundle, TileColor, TilePos, TileTextureIndex};
-use crate::{TileStorage, TilemapSize};
+use crate::tiles::{ TileBundle, TileColor, TilePos, TileTextureIndex };
+use crate::{ TileStorage, TilemapSize };
 
-use bevy::prelude::{Color, Commands};
+use bevy::prelude::{ Color, Commands };
 
 /// Fills an entire tile storage with the given tile.
 pub fn fill_tilemap(
@@ -13,7 +13,7 @@ pub fn fill_tilemap(
     size: TilemapSize,
     tilemap_id: TilemapId,
     commands: &mut Commands,
-    tile_storage: &mut TileStorage,
+    tile_storage: &mut TileStorage
 ) {
     commands.entity(tilemap_id.0).with_children(|parent| {
         for x in 0..size.x {
@@ -36,14 +36,14 @@ pub fn fill_tilemap(
 /// Fills a rectangular region with the given tile.
 ///
 /// The rectangular region is defined by an `origin` in [`TilePos`], and a
-/// `size` in tiles ([`TilemapSize`]).  
+/// `size` in tiles ([`TilemapSize`]).
 pub fn fill_tilemap_rect(
     texture_index: TileTextureIndex,
     origin: TilePos,
     size: TilemapSize,
     tilemap_id: TilemapId,
     commands: &mut Commands,
-    tile_storage: &mut TileStorage,
+    tile_storage: &mut TileStorage
 ) {
     commands.entity(tilemap_id.0).with_children(|parent| {
         for x in 0..size.x {
@@ -70,7 +70,7 @@ pub fn fill_tilemap_rect(
 /// Fills a rectangular region with colored versions of the given tile.
 ///
 /// The rectangular region is defined by an `origin` in [`TilePos`], and a
-/// `size` in tiles ([`TilemapSize`]).   
+/// `size` in tiles ([`TilemapSize`]).
 pub fn fill_tilemap_rect_color(
     texture_index: TileTextureIndex,
     origin: TilePos,
@@ -78,7 +78,7 @@ pub fn fill_tilemap_rect_color(
     color: Color,
     tilemap_id: TilemapId,
     commands: &mut Commands,
-    tile_storage: &mut TileStorage,
+    tile_storage: &mut TileStorage
 ) {
     commands.entity(tilemap_id.0).with_children(|parent| {
         for x in 0..size.x {
@@ -112,8 +112,7 @@ pub fn generate_hex_ring(origin: AxialPos, radius: u32) -> Vec<AxialPos> {
         vec![origin]
     } else {
         let mut ring = Vec::with_capacity((radius * 6) as usize);
-        let corners = HEX_DIRECTIONS
-            .iter()
+        let corners = HEX_DIRECTIONS.iter()
             .map(|direction| origin + radius * AxialPos::from(direction))
             .collect::<Vec<AxialPos>>();
         // The "tangent" is the direction we must travel in to reach the next corner
@@ -134,8 +133,8 @@ pub fn generate_hex_ring(origin: AxialPos, radius: u32) -> Vec<AxialPos> {
 /// Generates a vector of hex positions that form a hexagon of given `radius` around the specified
 /// `origin`.
 pub fn generate_hexagon(origin: AxialPos, radius: u32) -> Vec<AxialPos> {
-    let mut hexagon = Vec::with_capacity(1 + (6 * radius * (radius + 1) / 2) as usize);
-    for r in 0..(radius + 1) {
+    let mut hexagon = Vec::with_capacity(1 + (((6 * radius * (radius + 1)) / 2) as usize));
+    for r in 0..radius + 1 {
         hexagon.extend(generate_hex_ring(origin, r));
     }
     hexagon
@@ -154,15 +153,15 @@ pub fn fill_tilemap_hexagon(
     hex_coord_system: HexCoordSystem,
     tilemap_id: TilemapId,
     commands: &mut Commands,
-    tile_storage: &mut TileStorage,
+    tile_storage: &mut TileStorage
 ) {
     let tile_positions = generate_hexagon(
         AxialPos::from_tile_pos_given_coord_system(&origin, hex_coord_system),
-        radius,
+        radius
     )
-    .into_iter()
-    .map(|axial_pos| axial_pos.as_tile_pos_given_coord_system(hex_coord_system))
-    .collect::<Vec<TilePos>>();
+        .into_iter()
+        .map(|axial_pos| axial_pos.as_tile_pos_given_coord_system(hex_coord_system))
+        .collect::<Vec<TilePos>>();
 
     commands.entity(tilemap_id.0).with_children(|parent| {
         for tile_pos in tile_positions {
@@ -174,7 +173,56 @@ pub fn fill_tilemap_hexagon(
                     ..Default::default()
                 })
                 .id();
-            tile_storage.checked_set(&tile_pos, tile_entity)
+            tile_storage.checked_set(&tile_pos, tile_entity);
         }
     });
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::collections::HashSet;
+
+    fn axial_distance(a: AxialPos, b: AxialPos) -> u32 {
+        let dq = (a.q - b.q).abs() as u32;
+        let dr = (a.r - b.r).abs() as u32;
+        let ds = (a.q + a.r - (b.q + b.r)).abs() as u32;
+        (dq + dr + ds) / 2
+    }
+
+    #[test]
+    fn ring_radius_zero_is_origin_only() {
+        let origin = AxialPos::new(0, 0);
+        let ring = generate_hex_ring(origin, 0);
+        assert_eq!(ring, vec![origin]);
+    }
+
+    #[test]
+    fn ring_has_correct_length_and_radius() {
+        let origin = AxialPos::new(0, 0);
+        for r in 1..=4 {
+            let ring = generate_hex_ring(origin, r);
+            assert_eq!(ring.len() as u32, r * 6, "radius {r}");
+            // no duplicates & all exactly r away
+            let uniq: HashSet<_> = ring.iter().cloned().collect();
+            assert_eq!(uniq.len(), ring.len(), "radius {r} contains duplicates");
+            assert!(ring.iter().all(|p| axial_distance(*p, origin) == r));
+        }
+    }
+
+    #[test]
+    fn hexagon_area_matches_formula_and_contains_rings() {
+        let origin = AxialPos::new(0, 0);
+        for r in 0..=4 {
+            let hex = generate_hexagon(origin, r);
+            let expected = 1 + 3 * r * (r + 1);
+            assert_eq!(hex.len() as u32, expected, "radius {r}");
+            // make sure every inner ring element is inside the hexagon
+            for r_inner in 0..=r {
+                for p in generate_hex_ring(origin, r_inner) {
+                    assert!(hex.contains(&p), "ring {r_inner} not fully inside hex {r}");
+                }
+            }
+        }
+    }
 }

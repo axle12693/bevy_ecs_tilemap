@@ -3,12 +3,12 @@ pub mod neighbors;
 pub mod staggered;
 
 use crate::helpers::square_grid::diamond::DiamondPos;
-use crate::helpers::square_grid::neighbors::{SQUARE_OFFSETS, SquareDirection};
+use crate::helpers::square_grid::neighbors::{ SQUARE_OFFSETS, SquareDirection };
 use crate::helpers::square_grid::staggered::StaggeredPos;
 use crate::tiles::TilePos;
-use crate::{TilemapGridSize, TilemapSize};
+use crate::{ TilemapGridSize, TilemapSize };
 use bevy::math::Vec2;
-use std::ops::{Add, Mul, Sub};
+use std::ops::{ Add, Mul, Sub };
 
 /// Position for tiles arranged in a square coordinate system.
 ///
@@ -128,7 +128,7 @@ impl SquarePos {
     #[inline]
     pub fn corner_offset_in_world(
         corner_direction: SquareDirection,
-        grid_size: &TilemapGridSize,
+        grid_size: &TilemapGridSize
     ) -> Vec2 {
         let corner_offset = SquarePos::from(corner_direction);
         let corner_pos = 0.5 * Vec2::new(corner_offset.x as f32, corner_offset.y as f32);
@@ -141,7 +141,7 @@ impl SquarePos {
     pub fn corner_in_world(
         &self,
         corner_direction: SquareDirection,
-        grid_size: &TilemapGridSize,
+        grid_size: &TilemapGridSize
     ) -> Vec2 {
         let center = Vec2::new(self.x as f32, self.y as f32);
 
@@ -185,10 +185,89 @@ impl TilePos {
     pub fn square_offset(
         &self,
         direction: &SquareDirection,
-        map_size: &TilemapSize,
+        map_size: &TilemapSize
     ) -> Option<TilePos> {
-        SquarePos::from(self)
-            .offset(direction)
-            .as_tile_pos(map_size)
+        SquarePos::from(self).offset(direction).as_tile_pos(map_size)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::helpers::square_grid::neighbors::SquareDirection;
+    use crate::{ TilemapGridSize, TilemapSize, tiles::TilePos };
+
+    fn gs() -> TilemapGridSize {
+        TilemapGridSize { x: 32.0, y: 32.0 }
+    }
+
+    #[test]
+    fn add_sub_mul_work() {
+        let a = SquarePos::new(2, -3);
+        let b = SquarePos::new(-4, 8);
+
+        assert_eq!(a + b, SquarePos::new(-2, 5));
+        assert_eq!(a - b, SquarePos::new(6, -11));
+        assert_eq!(3 * a, SquarePos::new(6, -9));
+    }
+
+    #[test]
+    fn conversions_are_correct() {
+        let tp = TilePos::new(4, 7);
+        assert_eq!(SquarePos::from(&tp), SquarePos::new(4, 7));
+
+        let dp = DiamondPos { x: -2, y: 5 };
+        assert_eq!(SquarePos::from(dp), SquarePos::new(-2, 5));
+
+        let sp = StaggeredPos { x: 3, y: 1 };
+        assert_eq!(SquarePos::from(sp), SquarePos::new(3, 4));
+    }
+
+    #[test]
+    fn project_and_unproject_roundtrip() {
+        let pos = SquarePos::new(5, 9);
+        let world = pos.center_in_world(&gs());
+        assert_eq!(SquarePos::from_world_pos(&world, &gs()), pos);
+    }
+
+    #[test]
+    fn corners_in_world_match_offset_helpers() {
+        let pos = SquarePos::new(0, 0);
+        for dir in [
+            SquareDirection::NorthWest,
+            SquareDirection::NorthEast,
+            SquareDirection::SouthWest,
+            SquareDirection::SouthEast,
+        ] {
+            let by_center = pos.corner_in_world(dir, &gs());
+            let by_offset =
+                pos.center_in_world(&gs()) + SquarePos::corner_offset_in_world(dir, &gs());
+            assert_eq!(by_center, by_offset);
+        }
+    }
+
+    #[test]
+    fn as_tile_pos_respects_bounds() {
+        let map_size = TilemapSize { x: 10, y: 10 };
+        let inside = SquarePos::new(3, 9);
+        assert_eq!(inside.as_tile_pos(&map_size), Some(TilePos::new(3, 9)));
+
+        let neg = SquarePos::new(-1, 0);
+        let out = SquarePos::new(10, 0);
+        assert!(neg.as_tile_pos(&map_size).is_none());
+        assert!(out.as_tile_pos(&map_size).is_none());
+    }
+
+    #[test]
+    fn offset_matches_square_offsets_table() {
+        let origin = SquarePos::new(0, 0);
+        for dir in [
+            SquareDirection::North,
+            SquareDirection::East,
+            SquareDirection::South,
+            SquareDirection::West,
+        ] {
+            assert_eq!(origin.offset(&dir), SQUARE_OFFSETS[dir as usize]);
+        }
     }
 }

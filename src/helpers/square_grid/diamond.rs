@@ -1,12 +1,12 @@
 //! Code for the isometric diamond coordinate system.
 
 use crate::helpers::square_grid::SquarePos;
-use crate::helpers::square_grid::neighbors::{SQUARE_OFFSETS, SquareDirection};
+use crate::helpers::square_grid::neighbors::{ SQUARE_OFFSETS, SquareDirection };
 use crate::helpers::square_grid::staggered::StaggeredPos;
 use crate::tiles::TilePos;
-use crate::{TilemapGridSize, TilemapSize};
-use bevy::math::{Mat2, Vec2};
-use std::ops::{Add, Mul, Sub};
+use crate::{ TilemapGridSize, TilemapSize };
+use bevy::math::{ Mat2, Vec2 };
+use std::ops::{ Add, Mul, Sub };
 
 /// Position for tiles arranged in [`Diamond`](crate::map::IsoCoordSystem::Diamond) isometric
 /// coordinate system.
@@ -151,7 +151,7 @@ impl DiamondPos {
     #[inline]
     pub fn corner_offset_in_world(
         corner_direction: SquareDirection,
-        grid_size: &TilemapGridSize,
+        grid_size: &TilemapGridSize
     ) -> Vec2 {
         let corner_offset = DiamondPos::from(SquarePos::from(corner_direction));
         let corner_pos = 0.5 * Vec2::new(corner_offset.x as f32, corner_offset.y as f32);
@@ -164,7 +164,7 @@ impl DiamondPos {
     pub fn corner_in_world(
         &self,
         corner_direction: SquareDirection,
-        grid_size: &TilemapGridSize,
+        grid_size: &TilemapGridSize
     ) -> Vec2 {
         let center = Vec2::new(self.x as f32, self.y as f32);
 
@@ -208,10 +208,36 @@ impl TilePos {
     pub fn diamond_offset(
         &self,
         direction: &SquareDirection,
-        map_size: &TilemapSize,
+        map_size: &TilemapSize
     ) -> Option<TilePos> {
-        DiamondPos::from(self)
-            .offset(direction)
-            .as_tile_pos(map_size)
+        DiamondPos::from(self).offset(direction).as_tile_pos(map_size)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn grid32() -> TilemapGridSize {
+        TilemapGridSize { x: 32.0, y: 32.0 }
+    }
+
+    #[test]
+    fn arithmetic_operators_work() {
+        let a = DiamondPos::new(2, -3);
+        let b = DiamondPos::new(-5, 7);
+
+        assert_eq!(a + b, DiamondPos::new(-3, 4));
+        assert_eq!(a - b, DiamondPos::new(7, -10));
+        assert_eq!(3 * b, DiamondPos::new(-15, 21));
+    }
+
+    #[test]
+    fn world_roundtrip_through_center() {
+        let grid = grid32();
+        let tile = DiamondPos::new(7, 4);
+        let world = tile.center_in_world(&grid);
+        let tile_back = DiamondPos::from_world_pos(&world, &grid);
+        assert_eq!(tile_back, tile);
     }
 }

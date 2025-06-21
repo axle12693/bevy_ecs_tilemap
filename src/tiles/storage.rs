@@ -120,3 +120,100 @@ impl TileStorage {
         self.tiles.iter_mut().filter_map(|opt| opt.take())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use bevy::prelude::Entity;
+
+    fn e(id: u32) -> Entity {
+        // Helper that makes a deterministic dummy `Entity`
+        Entity::from_raw(id)
+    }
+
+    fn size_3x3() -> TilemapSize {
+        TilemapSize { x: 3, y: 3 }
+    }
+
+    #[test]
+    fn empty_storage_is_filled_with_none() {
+        let storage = TileStorage::empty(size_3x3());
+        assert_eq!(storage.size, size_3x3());
+        assert!(storage.iter().all(|opt| opt.is_none()));
+    }
+
+    #[test]
+    fn set_and_get_roundtrip() {
+        let mut storage = TileStorage::empty(size_3x3());
+        let pos = TilePos { x: 1, y: 2 };
+        storage.set(&pos, e(42));
+        assert_eq!(storage.get(&pos), Some(e(42)));
+    }
+
+    #[test]
+    fn checked_get_respects_bounds() {
+        let storage = TileStorage::empty(size_3x3());
+        // In-bounds → None (nothing stored yet)
+        assert_eq!(storage.checked_get(&TilePos { x: 0, y: 0 }), None);
+        // Out-of-bounds → None, **not** panic
+        assert_eq!(storage.checked_get(&TilePos { x: 99, y: 99 }), None);
+    }
+
+    #[test]
+    #[should_panic]
+    fn get_panics_when_out_of_bounds() {
+        let storage = TileStorage::empty(size_3x3());
+        let _ = storage.get(&TilePos { x: 50, y: 50 });
+    }
+
+    #[test]
+    fn remove_returns_entity_and_leaves_none() {
+        let mut storage = TileStorage::empty(size_3x3());
+        let pos = TilePos { x: 2, y: 1 };
+        storage.set(&pos, e(7));
+        assert_eq!(storage.remove(&pos), Some(e(7)));
+        assert_eq!(storage.get(&pos), None);
+    }
+
+    #[test]
+    fn drain_yields_every_entity_and_empties_storage() {
+        let mut storage = TileStorage::empty(size_3x3());
+        storage.set(&TilePos { x: 0, y: 0 }, e(1));
+        storage.set(&TilePos { x: 1, y: 1 }, e(2));
+        storage.set(&TilePos { x: 2, y: 2 }, e(3));
+
+        let mut drained: Vec<_> = storage.drain().collect();
+        drained.sort_by_key(|e| e.index());
+        assert_eq!(drained, vec![e(1), e(2), e(3)]);
+        assert!(storage.iter().all(|opt| opt.is_none()));
+    }
+
+    // ───────────────────────────────
+    // MapEntities implementation
+    // ───────────────────────────────
+    use bevy::ecs::entity::EntityMapper;
+
+    struct AddOneMapper;
+    impl EntityMapper for AddOneMapper {
+        fn get_mapped(&mut self, entity: Entity) -> Entity {
+            // Just bump the raw id for test purposes
+            e(entity.index() + 1)
+        }
+
+        fn set_mapped(&mut self, _source: Entity, _target: Entity) {
+            
+        }
+    }
+
+    #[test]
+    fn map_entities_transforms_every_entity() {
+        let mut storage = TileStorage::empty(size_3x3());
+        storage.set(&TilePos { x: 0, y: 0 }, e(10));
+        storage.set(&TilePos { x: 0, y: 1 }, e(11));
+
+        storage.map_entities(&mut AddOneMapper);
+
+        assert_eq!(storage.get(&TilePos { x: 0, y: 0 }), Some(e(11)));
+        assert_eq!(storage.get(&TilePos { x: 0, y: 1 }), Some(e(12)));
+    }
+}

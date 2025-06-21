@@ -1,29 +1,31 @@
-use std::hash::{Hash, Hasher};
+use std::hash::{ Hash, Hasher };
 
 use bevy::platform::collections::HashMap;
 use bevy::render::render_asset::RenderAssetUsages;
 use bevy::render::render_resource::Buffer;
-use bevy::render::{mesh::BaseMeshPipelineKey, primitives::Aabb};
-use bevy::{math::Mat4, render::mesh::PrimitiveTopology};
+use bevy::render::{ mesh::BaseMeshPipelineKey, primitives::Aabb };
+use bevy::{ math::Mat4, render::mesh::PrimitiveTopology };
 use bevy::{
-    math::{UVec2, UVec3, UVec4, Vec2, Vec3Swizzles, Vec4, Vec4Swizzles},
-    prelude::{Component, Entity, GlobalTransform, Mesh},
+    math::{ UVec2, UVec3, UVec4, Vec2, Vec3Swizzles, Vec4, Vec4Swizzles },
+    prelude::{ Component, Entity, GlobalTransform, Mesh },
     render::{
-        mesh::{Indices, RenderMesh, RenderMeshBufferInfo, VertexAttributeValues},
-        render_resource::{BufferInitDescriptor, BufferUsages, ShaderType},
+        mesh::{ Indices, RenderMesh, RenderMeshBufferInfo, VertexAttributeValues },
+        render_resource::{ BufferInitDescriptor, BufferUsages, ShaderType },
         renderer::RenderDevice,
     },
 };
 use bevy::{
-    prelude::{InheritedVisibility, Resource, Transform},
+    prelude::{ InheritedVisibility, Resource, Transform },
     render::mesh::MeshVertexBufferLayouts,
 };
 
-use crate::prelude::helpers::transform::{chunk_aabb, chunk_index_to_world_space};
+use crate::prelude::helpers::transform::{ chunk_aabb, chunk_index_to_world_space };
 use crate::render::extract::ExtractedFrustum;
 use crate::{
-    FrustumCulling, TilemapGridSize, TilemapTileSize,
-    map::{TilemapSize, TilemapTexture, TilemapType},
+    FrustumCulling,
+    TilemapGridSize,
+    TilemapTileSize,
+    map::{ TilemapSize, TilemapTexture, TilemapType },
     tiles::TilePos,
 };
 
@@ -59,12 +61,11 @@ impl RenderChunk2dStorage {
         visibility: &InheritedVisibility,
         frustum_culling: &FrustumCulling,
         render_size: RenderChunkSize,
-        y_sort: bool,
+        y_sort: bool
     ) -> &mut RenderChunk2d {
         let pos = position.xyz();
 
-        self.entity_to_chunk_tile
-            .insert(tile_entity, (position.w, pos, tile_pos));
+        self.entity_to_chunk_tile.insert(tile_entity, (position.w, pos, tile_pos));
 
         let chunk_storage = if self.chunks.contains_key(&position.w) {
             self.chunks.get_mut(&position.w).unwrap()
@@ -96,7 +97,7 @@ impl RenderChunk2dStorage {
                 visibility.get(),
                 **frustum_culling,
                 render_size,
-                y_sort,
+                y_sort
             );
             self.entity_to_chunk.insert(chunk_entity, pos);
             chunk_storage.insert(pos, chunk);
@@ -163,9 +164,7 @@ impl RenderChunk2dStorage {
     }
 
     pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut RenderChunk2d> {
-        self.chunks
-            .iter_mut()
-            .flat_map(|(_, x)| x.iter_mut().map(|x| x.1))
+        self.chunks.iter_mut().flat_map(|(_, x)| x.iter_mut().map(|x| x.1))
     }
 
     pub fn remove_map(&mut self, entity: Entity) {
@@ -243,7 +242,7 @@ impl RenderChunk2d {
         visible: bool,
         frustum_culling: bool,
         render_size: RenderChunkSize,
-        y_sort: bool,
+        y_sort: bool
     ) -> Self {
         let position = chunk_index_to_world_space(index.xy(), size_in_tiles, &grid_size, &map_type);
         let local_transform = Transform::from_translation(position.extend(0.0));
@@ -269,7 +268,7 @@ impl RenderChunk2d {
             transform_matrix,
             mesh: Mesh::new(
                 bevy::render::render_resource::PrimitiveTopology::TriangleList,
-                RenderAssetUsages::default(),
+                RenderAssetUsages::default()
             ),
             vertex_buffer: None,
             index_buffer: None,
@@ -324,7 +323,7 @@ impl RenderChunk2d {
         global_transform: Transform,
         grid_size: TilemapGridSize,
         tile_size: TilemapTileSize,
-        map_type: TilemapType,
+        map_type: TilemapType
     ) {
         let mut dirty_local_transform = false;
 
@@ -337,7 +336,7 @@ impl RenderChunk2d {
                 self.index.xy(),
                 self.size_in_tiles,
                 &self.grid_size,
-                &self.map_type,
+                &self.map_type
             );
 
             self.local_transform = Transform::from_translation(self.position.extend(0.0));
@@ -347,7 +346,7 @@ impl RenderChunk2d {
                 self.size_in_tiles,
                 &self.grid_size,
                 &self.tile_size,
-                &self.map_type,
+                &self.map_type
             );
         }
 
@@ -366,15 +365,16 @@ impl RenderChunk2d {
     pub fn prepare(
         &mut self,
         device: &RenderDevice,
-        mesh_vertex_buffer_layouts: &mut MeshVertexBufferLayouts,
+        mesh_vertex_buffer_layouts: &mut MeshVertexBufferLayouts
     ) {
         if self.dirty_mesh {
-            let size = ((self.size_in_tiles.x * self.size_in_tiles.y) * 4) as usize;
+            let size = (self.size_in_tiles.x * self.size_in_tiles.y * 4) as usize;
             let mut positions: Vec<[f32; 4]> = Vec::with_capacity(size);
             let mut textures: Vec<[f32; 4]> = Vec::with_capacity(size);
             let mut colors: Vec<[f32; 4]> = Vec::with_capacity(size);
-            let mut indices: Vec<u32> =
-                Vec::with_capacity(((self.size_in_tiles.x * self.size_in_tiles.y) * 6) as usize);
+            let mut indices: Vec<u32> = Vec::with_capacity(
+                (self.size_in_tiles.x * self.size_in_tiles.y * 6) as usize
+            );
 
             let mut i = 0;
 
@@ -398,8 +398,7 @@ impl RenderChunk2d {
                         // X + 1, Y
                         //[tile_pos.x + 1.0, tile_pos.y, animation_speed],
                         position,
-                    ]
-                    .into_iter(),
+                    ].into_iter()
                 );
 
                 colors.extend(std::iter::repeat_n(tile.color, 4));
@@ -422,46 +421,50 @@ impl RenderChunk2d {
 
             self.mesh.insert_attribute(
                 crate::render::ATTRIBUTE_POSITION,
-                VertexAttributeValues::Float32x4(positions),
+                VertexAttributeValues::Float32x4(positions)
             );
             self.mesh.insert_attribute(
                 crate::render::ATTRIBUTE_TEXTURE,
-                VertexAttributeValues::Float32x4(textures),
+                VertexAttributeValues::Float32x4(textures)
             );
             self.mesh.insert_attribute(
                 crate::render::ATTRIBUTE_COLOR,
-                VertexAttributeValues::Float32x4(colors),
+                VertexAttributeValues::Float32x4(colors)
             );
             self.mesh.insert_indices(Indices::U32(indices));
 
             let vertex_buffer_data = self.mesh.create_packed_vertex_buffer_data();
-            let vertex_buffer = device.create_buffer_with_data(&BufferInitDescriptor {
-                usage: BufferUsages::VERTEX,
-                label: Some("Mesh Vertex Buffer"),
-                contents: &vertex_buffer_data,
-            });
+            let vertex_buffer = device.create_buffer_with_data(
+                &(BufferInitDescriptor {
+                    usage: BufferUsages::VERTEX,
+                    label: Some("Mesh Vertex Buffer"),
+                    contents: &vertex_buffer_data,
+                })
+            );
 
-            let index_buffer = device.create_buffer_with_data(&BufferInitDescriptor {
-                usage: BufferUsages::INDEX,
-                contents: self.mesh.get_index_buffer_bytes().unwrap(),
-                label: Some("Mesh Index Buffer"),
-            });
+            let index_buffer = device.create_buffer_with_data(
+                &(BufferInitDescriptor {
+                    usage: BufferUsages::INDEX,
+                    contents: self.mesh.get_index_buffer_bytes().unwrap(),
+                    label: Some("Mesh Index Buffer"),
+                })
+            );
 
             let buffer_info = RenderMeshBufferInfo::Indexed {
                 count: self.mesh.indices().unwrap().len() as u32,
                 index_format: self.mesh.indices().unwrap().into(),
             };
 
-            let mesh_vertex_buffer_layout = self
-                .mesh
-                .get_mesh_vertex_buffer_layout(mesh_vertex_buffer_layouts);
+            let mesh_vertex_buffer_layout = self.mesh.get_mesh_vertex_buffer_layout(
+                mesh_vertex_buffer_layouts
+            );
             self.render_mesh = Some(RenderMesh {
                 vertex_count: self.mesh.count_vertices() as u32,
                 buffer_info,
                 morph_targets: None,
                 layout: mesh_vertex_buffer_layout,
                 key_bits: BaseMeshPipelineKey::from_primitive_topology(
-                    PrimitiveTopology::TriangleList,
+                    PrimitiveTopology::TriangleList
                 ),
             });
             self.vertex_buffer = Some(vertex_buffer);

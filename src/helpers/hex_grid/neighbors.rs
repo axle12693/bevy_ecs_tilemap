@@ -1,10 +1,10 @@
 use crate::TilePos;
 use crate::helpers::hex_grid::axial::AxialPos;
-use crate::helpers::hex_grid::offset::{ColEvenPos, ColOddPos, RowEvenPos, RowOddPos};
-use crate::map::{HexCoordSystem, TilemapSize};
+use crate::helpers::hex_grid::offset::{ ColEvenPos, ColOddPos, RowEvenPos, RowOddPos };
+use crate::map::{ HexCoordSystem, TilemapSize };
 use crate::prelude::TileStorage;
 use bevy::prelude::Entity;
-use std::ops::{Add, Sub};
+use std::ops::{ Add, Sub };
 
 /// Neighbors of a hexagonal tile. `Zero` corresponds with `East` for row-oriented tiles, and
 /// `North` for column-oriented tiles. It might also correspond with a custom direction for
@@ -98,7 +98,7 @@ impl Add<u32> for HexDirection {
     type Output = HexDirection;
 
     fn add(self, rhs: u32) -> Self::Output {
-        ((self as usize) + rhs as usize).into()
+        ((self as usize) + (rhs as usize)).into()
     }
 }
 
@@ -130,7 +130,7 @@ impl Sub<u32> for HexDirection {
     type Output = HexDirection;
 
     fn sub(self, rhs: u32) -> Self::Output {
-        ((self as usize) - rhs as usize).into()
+        ((self as usize) - (rhs as usize)).into()
     }
 }
 
@@ -322,18 +322,13 @@ impl<T> HexNeighbors<T> {
     /// If a neighbor is `None`, this iterator will skip it.
     #[inline]
     pub fn iter(&self) -> impl Iterator<Item = &'_ T> + '_ {
-        HEX_DIRECTIONS
-            .into_iter()
-            .filter_map(|direction| self.get(direction))
+        HEX_DIRECTIONS.into_iter().filter_map(|direction| self.get(direction))
     }
 
     /// Applies the supplied closure `f` with an [`and_then`](std::option::Option::and_then) to each
     /// neighbor element, where `f` takes `T` by value.
     #[inline]
-    pub fn and_then<U, F>(self, f: F) -> HexNeighbors<U>
-    where
-        F: Fn(T) -> Option<U>,
-    {
+    pub fn and_then<U, F>(self, f: F) -> HexNeighbors<U> where F: Fn(T) -> Option<U> {
         HexNeighbors {
             zero: self.zero.and_then(&f),
             one: self.one.and_then(&f),
@@ -347,10 +342,7 @@ impl<T> HexNeighbors<T> {
     /// Applies the supplied closure `f` with an [`and_then`](std::option::Option::and_then) to each
     /// neighbor element, where `f` takes `T` by reference.
     #[inline]
-    pub fn and_then_ref<'a, U, F>(&'a self, f: F) -> HexNeighbors<U>
-    where
-        F: Fn(&'a T) -> Option<U>,
-    {
+    pub fn and_then_ref<'a, U, F>(&'a self, f: F) -> HexNeighbors<U> where F: Fn(&'a T) -> Option<U> {
         HexNeighbors {
             zero: self.zero.as_ref().and_then(&f),
             one: self.one.as_ref().and_then(&f),
@@ -364,10 +356,7 @@ impl<T> HexNeighbors<T> {
     /// Applies the supplied closure `f` with a [`map`](std::option::Option::map) to each
     /// neighbor element, where `f` takes `T` by reference.
     #[inline]
-    pub fn map_ref<'a, U, F>(&'a self, f: F) -> HexNeighbors<U>
-    where
-        F: Fn(&'a T) -> U,
-    {
+    pub fn map_ref<'a, U, F>(&'a self, f: F) -> HexNeighbors<U> where F: Fn(&'a T) -> U {
         HexNeighbors {
             zero: self.zero.as_ref().map(&f),
             one: self.one.as_ref().map(&f),
@@ -382,8 +371,7 @@ impl<T> HexNeighbors<T> {
     /// `Option<T>`.
     #[inline]
     pub fn from_directional_closure<F>(f: F) -> HexNeighbors<T>
-    where
-        F: Fn(HexDirection) -> Option<T>,
+        where F: Fn(HexDirection) -> Option<T>
     {
         use HexDirection::*;
         HexNeighbors {
@@ -414,7 +402,7 @@ impl HexNeighbors<TilePos> {
     pub fn get_neighboring_positions(
         tile_pos: &TilePos,
         map_size: &TilemapSize,
-        hex_coord_sys: &HexCoordSystem,
+        hex_coord_sys: &HexCoordSystem
     ) -> HexNeighbors<TilePos> {
         match hex_coord_sys {
             HexCoordSystem::RowEven => {
@@ -452,14 +440,10 @@ impl HexNeighbors<TilePos> {
     #[inline]
     pub fn get_neighboring_positions_standard(
         tile_pos: &TilePos,
-        map_size: &TilemapSize,
+        map_size: &TilemapSize
     ) -> HexNeighbors<TilePos> {
         let axial_pos = AxialPos::from(tile_pos);
-        let f = |direction| {
-            axial_pos
-                .offset(direction)
-                .as_tile_pos_given_map_size(map_size)
-        };
+        let f = |direction| { axial_pos.offset(direction).as_tile_pos_given_map_size(map_size) };
         HexNeighbors::from_directional_closure(f)
     }
 
@@ -470,7 +454,7 @@ impl HexNeighbors<TilePos> {
     #[inline]
     pub fn get_neighboring_positions_row_even(
         tile_pos: &TilePos,
-        map_size: &TilemapSize,
+        map_size: &TilemapSize
     ) -> HexNeighbors<TilePos> {
         let axial_pos = AxialPos::from(RowEvenPos::from(tile_pos));
         let f = |direction| {
@@ -486,7 +470,7 @@ impl HexNeighbors<TilePos> {
     #[inline]
     pub fn get_neighboring_positions_row_odd(
         tile_pos: &TilePos,
-        map_size: &TilemapSize,
+        map_size: &TilemapSize
     ) -> HexNeighbors<TilePos> {
         let axial_pos = AxialPos::from(RowOddPos::from(tile_pos));
         let f = |direction| {
@@ -502,7 +486,7 @@ impl HexNeighbors<TilePos> {
     #[inline]
     pub fn get_neighboring_positions_col_even(
         tile_pos: &TilePos,
-        map_size: &TilemapSize,
+        map_size: &TilemapSize
     ) -> HexNeighbors<TilePos> {
         let axial_pos = AxialPos::from(ColEvenPos::from(tile_pos));
         let f = |direction| {
@@ -518,7 +502,7 @@ impl HexNeighbors<TilePos> {
     #[inline]
     pub fn get_neighboring_positions_col_odd(
         tile_pos: &TilePos,
-        map_size: &TilemapSize,
+        map_size: &TilemapSize
     ) -> HexNeighbors<TilePos> {
         let axial_pos = AxialPos::from(ColOddPos::from(tile_pos));
         let f = |direction| {
@@ -532,5 +516,38 @@ impl HexNeighbors<TilePos> {
     pub fn entities(&self, tile_storage: &TileStorage) -> HexNeighbors<Entity> {
         let f = |tile_pos| tile_storage.get(tile_pos);
         self.and_then_ref(f)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn axial_conversion_matches_const_offsets() {
+        for (idx, expected) in HEX_OFFSETS.iter().enumerate() {
+            let dir = HEX_DIRECTIONS[idx];
+            assert_eq!(AxialPos::from(dir), *expected);
+            assert_eq!(AxialPos::from(&dir), *expected);
+        }
+    }
+
+    #[test]
+    fn hex_neighbors_get_set_iter_work() {
+        let mut neigh: HexNeighbors<i32> = HexNeighbors::default();
+        // Initially everything is None
+        assert!(neigh.iter().next().is_none());
+
+        // Set two directions
+        neigh.set(HexDirection::One, 10);
+        neigh.set(HexDirection::Four, 20);
+
+        assert_eq!(neigh.get(HexDirection::One), Some(&10));
+        assert_eq!(neigh.get(HexDirection::Four), Some(&20));
+        assert_eq!(neigh.get(HexDirection::Zero), None);
+
+        // Iter should yield exactly the two we inserted, order guaranteed by HEX_DIRECTIONS
+        let collected: Vec<i32> = neigh.iter().copied().collect();
+        assert_eq!(collected, vec![10, 20]);
     }
 }

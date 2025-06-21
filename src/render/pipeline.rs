@@ -2,32 +2,60 @@ use bevy::{
     asset::weak_handle,
     core_pipeline::core_2d::CORE_2D_DEPTH_FORMAT,
     image::BevyDefault,
-    prelude::{Component, FromWorld, Handle, Resource, Shader, World},
+    prelude::{ Component, FromWorld, Handle, Resource, Shader, World },
     render::{
         globals::GlobalsUniform,
         render_resource::{
-            BindGroupLayout, BindGroupLayoutEntry, BindingType, BlendComponent, BlendFactor,
-            BlendOperation, BlendState, BufferBindingType, ColorTargetState, ColorWrites,
-            CompareFunction, DepthBiasState, DepthStencilState, Face, FragmentState, FrontFace,
-            MultisampleState, PolygonMode, PrimitiveState, PrimitiveTopology,
-            RenderPipelineDescriptor, SamplerBindingType, ShaderStages, ShaderType,
-            SpecializedRenderPipeline, StencilFaceState, StencilState, TextureFormat,
-            TextureSampleType, TextureViewDimension, VertexBufferLayout, VertexFormat, VertexState,
+            BindGroupLayout,
+            BindGroupLayoutEntry,
+            BindingType,
+            BlendComponent,
+            BlendFactor,
+            BlendOperation,
+            BlendState,
+            BufferBindingType,
+            ColorTargetState,
+            ColorWrites,
+            CompareFunction,
+            DepthBiasState,
+            DepthStencilState,
+            Face,
+            FragmentState,
+            FrontFace,
+            MultisampleState,
+            PolygonMode,
+            PrimitiveState,
+            PrimitiveTopology,
+            RenderPipelineDescriptor,
+            SamplerBindingType,
+            ShaderStages,
+            ShaderType,
+            SpecializedRenderPipeline,
+            StencilFaceState,
+            StencilState,
+            TextureFormat,
+            TextureSampleType,
+            TextureViewDimension,
+            VertexBufferLayout,
+            VertexFormat,
+            VertexState,
             VertexStepMode,
         },
         renderer::RenderDevice,
-        view::{ViewTarget, ViewUniform},
+        view::{ ViewTarget, ViewUniform },
     },
 };
 
-use crate::map::{HexCoordSystem, IsoCoordSystem, TilemapType};
+use crate::map::{ HexCoordSystem, IsoCoordSystem, TilemapType };
 
-use super::{chunk::TilemapUniformData, prepare::MeshUniform};
+use super::{ chunk::TilemapUniformData, prepare::MeshUniform };
 
-pub const TILEMAP_SHADER_VERTEX: Handle<Shader> =
-    weak_handle!("915ef471-58b4-4431-acae-f38b41969a9e");
-pub const TILEMAP_SHADER_FRAGMENT: Handle<Shader> =
-    weak_handle!("bf34308e-69df-4da8-b0ff-816042c716c8");
+pub const TILEMAP_SHADER_VERTEX: Handle<Shader> = weak_handle!(
+    "915ef471-58b4-4431-acae-f38b41969a9e"
+);
+pub const TILEMAP_SHADER_FRAGMENT: Handle<Shader> = weak_handle!(
+    "bf34308e-69df-4da8-b0ff-816042c716c8"
+);
 
 #[derive(Clone, Resource)]
 pub struct TilemapPipeline {
@@ -64,7 +92,7 @@ impl FromWorld for TilemapPipeline {
                     },
                     count: None,
                 },
-            ],
+            ]
         );
 
         let mesh_layout = render_device.create_bind_group_layout(
@@ -92,7 +120,7 @@ impl FromWorld for TilemapPipeline {
                     },
                     count: None,
                 },
-            ],
+            ]
         );
 
         #[cfg(not(feature = "atlas"))]
@@ -115,7 +143,7 @@ impl FromWorld for TilemapPipeline {
                     ty: BindingType::Sampler(SamplerBindingType::Filtering),
                     count: None,
                 },
-            ],
+            ]
         );
 
         #[cfg(feature = "atlas")]
@@ -138,7 +166,7 @@ impl FromWorld for TilemapPipeline {
                     ty: BindingType::Sampler(SamplerBindingType::Filtering),
                     count: None,
                 },
-            ],
+            ]
         );
 
         TilemapPipeline {
@@ -166,18 +194,20 @@ impl SpecializedRenderPipeline for TilemapPipeline {
 
         let mesh_string = match key.map_type {
             TilemapType::Square => "SQUARE",
-            TilemapType::Isometric(coord_system) => match coord_system {
-                IsoCoordSystem::Diamond => "ISO_DIAMOND",
-                IsoCoordSystem::Staggered => "ISO_STAGGERED",
-            },
-            TilemapType::Hexagon(coord_system) => match coord_system {
-                HexCoordSystem::Column => "COLUMN_HEX",
-                HexCoordSystem::ColumnEven => "COLUMN_EVEN_HEX",
-                HexCoordSystem::ColumnOdd => "COLUMN_ODD_HEX",
-                HexCoordSystem::Row => "ROW_HEX",
-                HexCoordSystem::RowEven => "ROW_EVEN_HEX",
-                HexCoordSystem::RowOdd => "ROW_ODD_HEX",
-            },
+            TilemapType::Isometric(coord_system) =>
+                match coord_system {
+                    IsoCoordSystem::Diamond => "ISO_DIAMOND",
+                    IsoCoordSystem::Staggered => "ISO_STAGGERED",
+                }
+            TilemapType::Hexagon(coord_system) =>
+                match coord_system {
+                    HexCoordSystem::Column => "COLUMN_HEX",
+                    HexCoordSystem::ColumnEven => "COLUMN_EVEN_HEX",
+                    HexCoordSystem::ColumnOdd => "COLUMN_ODD_HEX",
+                    HexCoordSystem::Row => "ROW_HEX",
+                    HexCoordSystem::RowEven => "ROW_EVEN_HEX",
+                    HexCoordSystem::RowOdd => "ROW_ODD_HEX",
+                }
         };
         shader_defs.push(mesh_string.into());
 
@@ -187,11 +217,13 @@ impl SpecializedRenderPipeline for TilemapPipeline {
             // Uv
             VertexFormat::Float32x4,
             // Color
-            VertexFormat::Float32x4,
+            VertexFormat::Float32x4
         ];
 
-        let vertex_layout =
-            VertexBufferLayout::from_vertex_formats(VertexStepMode::Vertex, formats);
+        let vertex_layout = VertexBufferLayout::from_vertex_formats(
+            VertexStepMode::Vertex,
+            formats
+        );
 
         RenderPipelineDescriptor {
             vertex: VertexState {
@@ -204,31 +236,33 @@ impl SpecializedRenderPipeline for TilemapPipeline {
                 shader: TILEMAP_SHADER_FRAGMENT,
                 shader_defs,
                 entry_point: "fragment".into(),
-                targets: vec![Some(ColorTargetState {
-                    format: if key.hdr {
-                        ViewTarget::TEXTURE_FORMAT_HDR
-                    } else {
-                        TextureFormat::bevy_default()
-                    },
-                    blend: Some(BlendState {
-                        color: BlendComponent {
-                            src_factor: BlendFactor::SrcAlpha,
-                            dst_factor: BlendFactor::OneMinusSrcAlpha,
-                            operation: BlendOperation::Add,
+                targets: vec![
+                    Some(ColorTargetState {
+                        format: if key.hdr {
+                            ViewTarget::TEXTURE_FORMAT_HDR
+                        } else {
+                            TextureFormat::bevy_default()
                         },
-                        alpha: BlendComponent {
-                            src_factor: BlendFactor::One,
-                            dst_factor: BlendFactor::One,
-                            operation: BlendOperation::Add,
-                        },
-                    }),
-                    write_mask: ColorWrites::ALL,
-                })],
+                        blend: Some(BlendState {
+                            color: BlendComponent {
+                                src_factor: BlendFactor::SrcAlpha,
+                                dst_factor: BlendFactor::OneMinusSrcAlpha,
+                                operation: BlendOperation::Add,
+                            },
+                            alpha: BlendComponent {
+                                src_factor: BlendFactor::One,
+                                dst_factor: BlendFactor::One,
+                                operation: BlendOperation::Add,
+                            },
+                        }),
+                        write_mask: ColorWrites::ALL,
+                    })
+                ],
             }),
             layout: vec![
                 self.view_layout.clone(),
                 self.mesh_layout.clone(),
-                self.material_layout.clone(),
+                self.material_layout.clone()
             ],
             primitive: PrimitiveState {
                 conservative: false,

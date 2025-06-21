@@ -1,42 +1,57 @@
-use crate::prelude::{TilemapId, TilemapRenderSettings};
+use crate::prelude::{ TilemapId, TilemapRenderSettings };
 
 use bevy::log::error;
 #[cfg(not(feature = "atlas"))]
 use bevy::render::renderer::RenderQueue;
 use bevy::{
     core_pipeline::core_2d::Transparent2d,
-    ecs::system::{StaticSystemParam, SystemParamItem},
+    ecs::system::{ StaticSystemParam, SystemParamItem },
     math::FloatOrd,
-    platform::collections::{HashMap, HashSet},
+    platform::collections::{ HashMap, HashSet },
     prelude::*,
     reflect::TypePath,
     render::{
-        Extract, Render, RenderApp, RenderSet,
-        extract_component::{ExtractComponent, ExtractComponentPlugin},
+        Extract,
+        Render,
+        RenderApp,
+        RenderSet,
+        extract_component::{ ExtractComponent, ExtractComponentPlugin },
         globals::GlobalsBuffer,
         render_asset::RenderAssets,
         render_phase::{
-            AddRenderCommand, DrawFunctions, PhaseItemExtraIndex, ViewSortedRenderPhases,
+            AddRenderCommand,
+            DrawFunctions,
+            PhaseItemExtraIndex,
+            ViewSortedRenderPhases,
         },
         render_resource::{
-            AsBindGroup, AsBindGroupError, BindGroup, BindGroupEntry, BindGroupLayout,
-            BindingResource, OwnedBindingResource, PipelineCache, RenderPipelineDescriptor,
-            ShaderRef, SpecializedRenderPipeline, SpecializedRenderPipelines,
+            AsBindGroup,
+            AsBindGroupError,
+            BindGroup,
+            BindGroupEntry,
+            BindGroupLayout,
+            BindingResource,
+            OwnedBindingResource,
+            PipelineCache,
+            RenderPipelineDescriptor,
+            ShaderRef,
+            SpecializedRenderPipeline,
+            SpecializedRenderPipelines,
         },
         renderer::RenderDevice,
         texture::GpuImage,
-        view::{ExtractedView, RenderVisibleEntities, ViewUniforms},
+        view::{ ExtractedView, RenderVisibleEntities, ViewUniforms },
     },
 };
-use std::{hash::Hash, marker::PhantomData};
+use std::{ hash::Hash, marker::PhantomData };
 
 use super::{
     ModifiedImageIds,
-    chunk::{ChunkId, RenderChunk2dStorage},
+    chunk::{ ChunkId, RenderChunk2dStorage },
     draw::DrawTilemapMaterial,
-    pipeline::{TilemapPipeline, TilemapPipelineKey},
+    pipeline::{ TilemapPipeline, TilemapPipelineKey },
     prepare,
-    queue::{ImageBindGroups, TilemapViewBindGroup},
+    queue::{ ImageBindGroups, TilemapViewBindGroup },
 };
 
 #[cfg(not(feature = "atlas"))]
@@ -68,20 +83,14 @@ pub struct MaterialTilemapKey<M: MaterialTilemap> {
 
 impl<M: MaterialTilemap> Eq for MaterialTilemapKey<M> where M::Data: PartialEq {}
 
-impl<M: MaterialTilemap> PartialEq for MaterialTilemapKey<M>
-where
-    M::Data: PartialEq,
-{
+impl<M: MaterialTilemap> PartialEq for MaterialTilemapKey<M> where M::Data: PartialEq {
     fn eq(&self, other: &Self) -> bool {
-        self.tilemap_pipeline_key == other.tilemap_pipeline_key
-            && self.bind_group_data == other.bind_group_data
+        self.tilemap_pipeline_key == other.tilemap_pipeline_key &&
+            self.bind_group_data == other.bind_group_data
     }
 }
 
-impl<M: MaterialTilemap> Clone for MaterialTilemapKey<M>
-where
-    M::Data: Clone,
-{
+impl<M: MaterialTilemap> Clone for MaterialTilemapKey<M> where M::Data: Clone {
     fn clone(&self) -> Self {
         Self {
             tilemap_pipeline_key: self.tilemap_pipeline_key,
@@ -90,10 +99,7 @@ where
     }
 }
 
-impl<M: MaterialTilemap> Hash for MaterialTilemapKey<M>
-where
-    M::Data: Hash,
-{
+impl<M: MaterialTilemap> Hash for MaterialTilemapKey<M> where M::Data: Hash {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         self.tilemap_pipeline_key.hash(state);
         self.bind_group_data.hash(state);
@@ -136,13 +142,14 @@ impl<M: MaterialTilemap> Default for MaterialTilemapPlugin<M> {
     }
 }
 
-impl<M: MaterialTilemap> Plugin for MaterialTilemapPlugin<M>
-where
-    M::Data: PartialEq + Eq + Hash + Clone,
+impl<M: MaterialTilemap> Plugin
+    for MaterialTilemapPlugin<M>
+    where M::Data: PartialEq + Eq + Hash + Clone
 {
     fn build(&self, app: &mut App) {
-        app.init_asset::<M>()
-            .add_plugins(ExtractComponentPlugin::<MaterialTilemapHandle<M>>::extract_visible());
+        app.init_asset::<M>().add_plugins(
+            ExtractComponentPlugin::<MaterialTilemapHandle<M>>::extract_visible()
+        );
     }
 
     fn finish(&self, app: &mut App) {
@@ -156,22 +163,19 @@ where
                 .add_systems(ExtractSchedule, extract_materials_tilemap::<M>)
                 .add_systems(
                     Render,
-                    prepare_materials_tilemap::<M>.in_set(RenderSet::PrepareAssets),
+                    prepare_materials_tilemap::<M>.in_set(RenderSet::PrepareAssets)
                 )
-                .add_systems(
-                    Render,
-                    (
-                        // Ensure `queue_material_tilemap_meshes` runs after `prepare::prepare` because `prepare` calls `commands.spawn` with `ChunkId`
-                        // and that data is then consumed by `queue_material_tilemap_mesh`. This is important because `prepare` is part of the `PrepareAssets`
-                        // set. Bevy is loose on its expectation of when systems in the `PrepareAssets` set execute (for performance) and only needs them
-                        // to run before the `Prepare` set (which is after Queue). This invites the possibility of an intermittent incorrect ordering dependent
-                        // on the scheduler.
-                        queue_material_tilemap_meshes::<M>
-                            .in_set(RenderSet::Queue)
-                            .after(prepare::prepare),
-                        bind_material_tilemap_meshes::<M>.in_set(RenderSet::PrepareBindGroups),
-                    ),
-                );
+                .add_systems(Render, (
+                    // Ensure `queue_material_tilemap_meshes` runs after `prepare::prepare` because `prepare` calls `commands.spawn` with `ChunkId`
+                    // and that data is then consumed by `queue_material_tilemap_mesh`. This is important because `prepare` is part of the `PrepareAssets`
+                    // set. Bevy is loose on its expectation of when systems in the `PrepareAssets` set execute (for performance) and only needs them
+                    // to run before the `Prepare` set (which is after Queue). This invites the possibility of an intermittent incorrect ordering dependent
+                    // on the scheduler.
+                    queue_material_tilemap_meshes::<M>
+                        .in_set(RenderSet::Queue)
+                        .after(prepare::prepare),
+                    bind_material_tilemap_meshes::<M>.in_set(RenderSet::PrepareBindGroups),
+                ));
         }
     }
 }
@@ -218,9 +222,9 @@ impl<M: MaterialTilemap> Clone for MaterialTilemapPipeline<M> {
     }
 }
 
-impl<M: MaterialTilemap> SpecializedRenderPipeline for MaterialTilemapPipeline<M>
-where
-    M::Data: PartialEq + Eq + Hash + Clone,
+impl<M: MaterialTilemap> SpecializedRenderPipeline
+    for MaterialTilemapPipeline<M>
+    where M::Data: PartialEq + Eq + Hash + Clone
 {
     type Key = MaterialTilemapKey<M>;
 
@@ -237,7 +241,7 @@ where
             self.tilemap_pipeline.view_layout.clone(),
             self.tilemap_pipeline.mesh_layout.clone(),
             self.tilemap_pipeline.material_layout.clone(),
-            self.material_tilemap_layout.clone(),
+            self.material_tilemap_layout.clone()
         ];
 
         M::specialize(&mut descriptor, key);
@@ -286,7 +290,7 @@ impl<T: MaterialTilemap> Default for RenderMaterialsTilemap<T> {
 fn extract_materials_tilemap<M: MaterialTilemap>(
     mut commands: Commands,
     mut events: Extract<EventReader<AssetEvent<M>>>,
-    assets: Extract<Res<Assets<M>>>,
+    assets: Extract<Res<Assets<M>>>
 ) {
     let mut changed_assets = <HashSet<_>>::default();
     let mut removed = Vec::new();
@@ -299,7 +303,9 @@ fn extract_materials_tilemap<M: MaterialTilemap>(
                 changed_assets.remove(id);
                 removed.push(*id);
             }
-            _ => continue,
+            _ => {
+                continue;
+            }
         }
     }
 
@@ -337,7 +343,7 @@ fn prepare_materials_tilemap<M: MaterialTilemap>(
     mut render_materials: ResMut<RenderMaterialsTilemap<M>>,
     render_device: Res<RenderDevice>,
     pipeline: Res<MaterialTilemapPipeline<M>>,
-    mut param: StaticSystemParam<M::Param>,
+    mut param: StaticSystemParam<M::Param>
 ) {
     let queued_assets = std::mem::take(&mut prepare_next_frame.assets);
     for (handle, material) in queued_assets {
@@ -387,10 +393,9 @@ fn prepare_material_tilemap<M: MaterialTilemap>(
     material: &M,
     render_device: &RenderDevice,
     pipeline: &MaterialTilemapPipeline<M>,
-    param: &mut SystemParamItem<M::Param>,
+    param: &mut SystemParamItem<M::Param>
 ) -> Result<PreparedMaterialTilemap<M>, AsBindGroupError> {
-    let prepared =
-        material.as_bind_group(&pipeline.material_tilemap_layout, render_device, param)?;
+    let prepared = material.as_bind_group(&pipeline.material_tilemap_layout, render_device, param)?;
     Ok(PreparedMaterialTilemap {
         bindings: prepared.bindings.0,
         bind_group: prepared.bind_group,
@@ -421,9 +426,9 @@ pub fn queue_material_tilemap_meshes<M: MaterialTilemap>(
         ResMut<TextureArrayCache>,
         Res<RenderQueue>,
     ),
-    mut transparent_render_phases: ResMut<ViewSortedRenderPhases<Transparent2d>>,
-) where
-    M::Data: PartialEq + Eq + Hash + Clone,
+    mut transparent_render_phases: ResMut<ViewSortedRenderPhases<Transparent2d>>
+)
+    where M::Data: PartialEq + Eq + Hash + Clone
 {
     #[cfg(not(feature = "atlas"))]
     texture_array_cache.queue(&_render_device, &render_queue, &gpu_images);
@@ -437,8 +442,9 @@ pub fn queue_material_tilemap_meshes<M: MaterialTilemap>(
     }
 
     for (view, msaa, visible_entities) in views.iter_mut() {
-        let Some(transparent_phase) = transparent_render_phases.get_mut(&view.retained_view_entity)
-        else {
+        let Some(transparent_phase) = transparent_render_phases.get_mut(
+            &view.retained_view_entity
+        ) else {
             continue;
         };
 
@@ -448,10 +454,11 @@ pub fn queue_material_tilemap_meshes<M: MaterialTilemap>(
             .unwrap();
 
         for (entity, chunk_id, transform, tilemap_id) in standard_tilemap_meshes.iter() {
-            if !visible_entities
-                .get::<TilemapRenderSettings>()
-                .iter()
-                .any(|(entity, _main_entity)| entity.index() == tilemap_id.0.index())
+            if
+                !visible_entities
+                    .get::<TilemapRenderSettings>()
+                    .iter()
+                    .any(|(entity, _main_entity)| entity.index() == tilemap_id.0.index())
             {
                 continue;
             }
@@ -463,12 +470,11 @@ pub fn queue_material_tilemap_meshes<M: MaterialTilemap>(
                 continue;
             };
 
-            if let Some(chunk) = chunk_storage.get(&UVec4::new(
-                chunk_id.0.x,
-                chunk_id.0.y,
-                chunk_id.0.z,
-                tilemap_id.0.index(),
-            )) {
+            if
+                let Some(chunk) = chunk_storage.get(
+                    &UVec4::new(chunk_id.0.x, chunk_id.0.y, chunk_id.0.z, tilemap_id.0.index())
+                )
+            {
                 #[cfg(not(feature = "atlas"))]
                 if !texture_array_cache.contains(&chunk.texture) {
                     continue;
@@ -491,13 +497,13 @@ pub fn queue_material_tilemap_meshes<M: MaterialTilemap>(
                     MaterialTilemapKey {
                         tilemap_pipeline_key: key,
                         bind_group_data: material.key.clone(),
-                    },
+                    }
                 );
                 let z = if chunk.y_sort {
-                    transform.translation.z
-                        + (1.0
-                            - (transform.translation.y
-                                / (chunk.map_size.y as f32 * chunk.tile_size.y)))
+                    transform.translation.z +
+                        (1.0 -
+                            transform.translation.y /
+                                ((chunk.map_size.y as f32) * chunk.tile_size.y))
                 } else {
                     transform.translation.z
                 };
@@ -537,9 +543,9 @@ pub fn bind_material_tilemap_meshes<M: MaterialTilemap>(
     #[cfg(not(feature = "atlas"))] (mut texture_array_cache, render_queue): (
         ResMut<TextureArrayCache>,
         Res<RenderQueue>,
-    ),
-) where
-    M::Data: PartialEq + Eq + Hash + Clone,
+    )
+)
+    where M::Data: PartialEq + Eq + Hash + Clone
 {
     #[cfg(not(feature = "atlas"))]
     texture_array_cache.queue(&render_device, &render_queue, &gpu_images);
@@ -548,10 +554,12 @@ pub fn bind_material_tilemap_meshes<M: MaterialTilemap>(
         return;
     }
 
-    if let (Some(view_binding), Some(globals)) = (
-        view_uniforms.uniforms.binding(),
-        globals_buffer.buffer.binding(),
-    ) {
+    if
+        let (Some(view_binding), Some(globals)) = (
+            view_uniforms.uniforms.binding(),
+            globals_buffer.buffer.binding(),
+        )
+    {
         for (entity, visible_entities) in views.iter_mut() {
             let view_bind_group = render_device.create_bind_group(
                 Some("tilemap_view_bind_group"),
@@ -565,7 +573,7 @@ pub fn bind_material_tilemap_meshes<M: MaterialTilemap>(
                         binding: 1,
                         resource: globals.clone(),
                     },
-                ],
+                ]
             );
 
             commands.entity(entity).insert(TilemapViewBindGroup {
@@ -573,10 +581,11 @@ pub fn bind_material_tilemap_meshes<M: MaterialTilemap>(
             });
 
             for (chunk_id, tilemap_id) in standard_tilemap_meshes.iter() {
-                if !visible_entities
-                    .get::<TilemapRenderSettings>()
-                    .iter()
-                    .any(|(entity, _main_entity)| entity.index() == tilemap_id.0.index())
+                if
+                    !visible_entities
+                        .get::<TilemapRenderSettings>()
+                        .iter()
+                        .any(|(entity, _main_entity)| entity.index() == tilemap_id.0.index())
                 {
                     continue;
                 }
@@ -586,14 +595,13 @@ pub fn bind_material_tilemap_meshes<M: MaterialTilemap>(
                 };
                 if render_materials.get(&material_handle.id()).is_none() {
                     continue;
-                };
+                }
 
-                if let Some(chunk) = chunk_storage.get(&UVec4::new(
-                    chunk_id.0.x,
-                    chunk_id.0.y,
-                    chunk_id.0.z,
-                    tilemap_id.0.index(),
-                )) {
+                if
+                    let Some(chunk) = chunk_storage.get(
+                        &UVec4::new(chunk_id.0.x, chunk_id.0.y, chunk_id.0.z, tilemap_id.0.index())
+                    )
+                {
                     #[cfg(not(feature = "atlas"))]
                     if !texture_array_cache.contains(&chunk.texture) {
                         continue;
@@ -621,16 +629,16 @@ pub fn bind_material_tilemap_meshes<M: MaterialTilemap>(
                                     binding: 1,
                                     resource: BindingResource::Sampler(&gpu_image.sampler),
                                 },
-                            ],
+                            ]
                         )
                     };
                     if modified_image_ids.is_texture_modified(&chunk.texture) {
-                        image_bind_groups
-                            .values
-                            .insert(chunk.texture.clone_weak(), create_bind_group());
+                        image_bind_groups.values.insert(
+                            chunk.texture.clone_weak(),
+                            create_bind_group()
+                        );
                     } else {
-                        image_bind_groups
-                            .values
+                        image_bind_groups.values
                             .entry(chunk.texture.clone_weak())
                             .or_insert_with(create_bind_group);
                     }

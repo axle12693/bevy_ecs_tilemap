@@ -32,6 +32,9 @@ rand = "0.8"
 serde_json = { version = "1.0" }
 tiled = { version = "0.14.0", default-features = false }
 thiserror = { version = "2.0" }
+approx = { version = "0.5" }
+proptest = "1.7"
+glam = "0.30"
 
 [dev-dependencies.bevy]
 version = "0.16.0"

@@ -1,16 +1,19 @@
 //! Code for the axial coordinate system.
 
-use crate::helpers::hex_grid::consts::{DOUBLE_INV_SQRT_3, HALF_SQRT_3, INV_SQRT_3};
-use crate::helpers::hex_grid::cube::{CubePos, FractionalCubePos};
+use crate::helpers::hex_grid::consts::{ DOUBLE_INV_SQRT_3, HALF_SQRT_3, INV_SQRT_3 };
+use crate::helpers::hex_grid::cube::{ CubePos, FractionalCubePos };
 use crate::helpers::hex_grid::neighbors::{
-    HEX_OFFSETS, HexColDirection, HexDirection, HexRowDirection,
+    HEX_OFFSETS,
+    HexColDirection,
+    HexDirection,
+    HexRowDirection,
 };
-use crate::helpers::hex_grid::offset::{ColEvenPos, ColOddPos, RowEvenPos, RowOddPos};
+use crate::helpers::hex_grid::offset::{ ColEvenPos, ColOddPos, RowEvenPos, RowOddPos };
 use crate::map::HexCoordSystem;
 use crate::tiles::TilePos;
-use crate::{TilemapGridSize, TilemapSize};
-use bevy::math::{Mat2, Vec2};
-use std::ops::{Add, Mul, Sub};
+use crate::{ TilemapGridSize, TilemapSize };
+use bevy::math::{ Mat2, Vec2 };
+use std::ops::{ Add, Mul, Sub };
 
 /// A position in a hex grid labelled according to [`HexCoordSystem::Row`] or
 /// [`HexCoordSystem::Column`]. It is composed of a pair of `i32` digits named `q` and `r`. When
@@ -191,7 +194,7 @@ pub const ROW_BASIS: Mat2 = Mat2::from_cols(Vec2::new(1.0, 0.0), Vec2::new(0.5, 
 /// The inverse of [`ROW_BASIS`].
 pub const INV_ROW_BASIS: Mat2 = Mat2::from_cols(
     Vec2::new(1.0, 0.0),
-    Vec2::new(-1.0 * INV_SQRT_3, DOUBLE_INV_SQRT_3),
+    Vec2::new(-1.0 * INV_SQRT_3, DOUBLE_INV_SQRT_3)
 );
 
 /// The matrix for mapping from [`AxialPos`], to world position when hexes are arranged
@@ -205,7 +208,7 @@ pub const COL_BASIS: Mat2 = Mat2::from_cols(Vec2::new(HALF_SQRT_3, 0.5), Vec2::n
 /// The inverse of [`COL_BASIS`].
 pub const INV_COL_BASIS: Mat2 = Mat2::from_cols(
     Vec2::new(DOUBLE_INV_SQRT_3, -1.0 * INV_SQRT_3),
-    Vec2::new(0.0, 1.0),
+    Vec2::new(0.0, 1.0)
 );
 
 pub const UNIT_Q: AxialPos = AxialPos { q: 1, r: 0 };
@@ -239,10 +242,7 @@ impl AxialPos {
     #[inline]
     pub fn project_row(axial_pos: Vec2, grid_size: &TilemapGridSize) -> Vec2 {
         let unscaled_pos = ROW_BASIS * axial_pos;
-        Vec2::new(
-            grid_size.x * unscaled_pos.x,
-            ROW_BASIS.y_axis.y * grid_size.y * unscaled_pos.y,
-        )
+        Vec2::new(grid_size.x * unscaled_pos.x, ROW_BASIS.y_axis.y * grid_size.y * unscaled_pos.y)
     }
 
     /// Returns the center of a hex tile world space, assuming that:
@@ -259,7 +259,7 @@ impl AxialPos {
     #[inline]
     pub fn corner_offset_in_world_row(
         corner_direction: HexRowDirection,
-        grid_size: &TilemapGridSize,
+        grid_size: &TilemapGridSize
     ) -> Vec2 {
         let corner_offset = AxialPos::from(HexDirection::from(corner_direction));
         let corner_pos = 0.5 * Vec2::new(corner_offset.q as f32, corner_offset.r as f32);
@@ -275,7 +275,7 @@ impl AxialPos {
     pub fn corner_in_world_row(
         &self,
         corner_direction: HexRowDirection,
-        grid_size: &TilemapGridSize,
+        grid_size: &TilemapGridSize
     ) -> Vec2 {
         let center = Vec2::new(self.q as f32, self.r as f32);
 
@@ -294,10 +294,7 @@ impl AxialPos {
     #[inline]
     pub fn project_col(axial_pos: Vec2, grid_size: &TilemapGridSize) -> Vec2 {
         let unscaled_pos = COL_BASIS * axial_pos;
-        Vec2::new(
-            COL_BASIS.x_axis.x * grid_size.x * unscaled_pos.x,
-            grid_size.y * unscaled_pos.y,
-        )
+        Vec2::new(COL_BASIS.x_axis.x * grid_size.x * unscaled_pos.x, grid_size.y * unscaled_pos.y)
     }
 
     /// Returns the center of a hex tile world space, assuming that:
@@ -314,7 +311,7 @@ impl AxialPos {
     #[inline]
     pub fn corner_offset_in_world_col(
         corner_direction: HexColDirection,
-        grid_size: &TilemapGridSize,
+        grid_size: &TilemapGridSize
     ) -> Vec2 {
         let corner_offset = AxialPos::from(HexDirection::from(corner_direction));
         let corner_pos = 0.5 * Vec2::new(corner_offset.q as f32, corner_offset.r as f32);
@@ -330,7 +327,7 @@ impl AxialPos {
     pub fn corner_in_world_col(
         &self,
         corner_direction: HexColDirection,
-        grid_size: &TilemapGridSize,
+        grid_size: &TilemapGridSize
     ) -> Vec2 {
         let center = Vec2::new(self.q as f32, self.r as f32);
 
@@ -348,7 +345,7 @@ impl AxialPos {
     pub fn from_world_pos_row(world_pos: &Vec2, grid_size: &TilemapGridSize) -> AxialPos {
         let normalized_world_pos = Vec2::new(
             world_pos.x / grid_size.x,
-            world_pos.y / (ROW_BASIS.y_axis.y * grid_size.y),
+            world_pos.y / (ROW_BASIS.y_axis.y * grid_size.y)
         );
         let frac_pos = FractionalAxialPos::from(INV_ROW_BASIS * normalized_world_pos);
         frac_pos.round()
@@ -362,7 +359,7 @@ impl AxialPos {
     pub fn from_world_pos_col(world_pos: &Vec2, grid_size: &TilemapGridSize) -> AxialPos {
         let normalized_world_pos = Vec2::new(
             world_pos.x / (COL_BASIS.x_axis.x * grid_size.x),
-            world_pos.y / grid_size.y,
+            world_pos.y / grid_size.y
         );
         let frac_pos = FractionalAxialPos::from(INV_COL_BASIS * normalized_world_pos);
         frac_pos.round()
@@ -416,7 +413,7 @@ impl AxialPos {
     pub fn as_tile_pos_given_coord_system_and_map_size(
         &self,
         hex_coord_sys: HexCoordSystem,
-        map_size: &TilemapSize,
+        map_size: &TilemapSize
     ) -> Option<TilePos> {
         match hex_coord_sys {
             HexCoordSystem::RowEven => RowEvenPos::from(*self).as_tile_pos_given_map_size(map_size),
@@ -442,7 +439,7 @@ impl AxialPos {
     #[inline]
     pub fn from_tile_pos_given_coord_system(
         tile_pos: &TilePos,
-        hex_coord_sys: HexCoordSystem,
+        hex_coord_sys: HexCoordSystem
     ) -> AxialPos {
         match hex_coord_sys {
             HexCoordSystem::RowEven => RowEvenPos::from(tile_pos).into(),
@@ -507,5 +504,83 @@ impl From<AxialPos> for FractionalAxialPos {
             q: axial_pos.q as f32,
             r: axial_pos.r as f32,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::helpers::hex_grid::offset::{ ColEvenPos, ColOddPos, RowEvenPos, RowOddPos };
+
+    // ---------- small private helper -----------------------------------------------------------
+    #[test]
+    fn ceiled_div_by_2_behaves_as_expected() {
+        // negative inputs
+        assert_eq!(super::ceiled_division_by_2(-3), -2);
+        assert_eq!(super::ceiled_division_by_2(-2), -1);
+        assert_eq!(super::ceiled_division_by_2(-1), -1);
+
+        // zero & positives
+        assert_eq!(super::ceiled_division_by_2(0), 0);
+        assert_eq!(super::ceiled_division_by_2(1), 1);
+        assert_eq!(super::ceiled_division_by_2(2), 1);
+        assert_eq!(super::ceiled_division_by_2(3), 2);
+    }
+
+    // ---------- axial <-> offset round-trips ---------------------------------------------------
+    const SAMPLE_AXIALS: &[AxialPos] = &[
+        AxialPos::new(0, 0),
+        AxialPos::new(2, -1),
+        AxialPos::new(-4, 5),
+        AxialPos::new(7, -3),
+    ];
+
+    #[test]
+    fn round_trip_row_odd() {
+        for &ax in SAMPLE_AXIALS {
+            let back: AxialPos = RowOddPos::from(ax).into();
+            assert_eq!(ax, back, "failed on {ax:?}");
+        }
+    }
+
+    #[test]
+    fn round_trip_row_even() {
+        for &ax in SAMPLE_AXIALS {
+            let back: AxialPos = RowEvenPos::from(ax).into();
+            assert_eq!(ax, back, "failed on {ax:?}");
+        }
+    }
+
+    #[test]
+    fn round_trip_col_odd() {
+        for &ax in SAMPLE_AXIALS {
+            let back: AxialPos = ColOddPos::from(ax).into();
+            assert_eq!(ax, back, "failed on {ax:?}");
+        }
+    }
+
+    #[test]
+    fn round_trip_col_even() {
+        for &ax in SAMPLE_AXIALS {
+            let back: AxialPos = ColEvenPos::from(ax).into();
+            assert_eq!(ax, back, "failed on {ax:?}");
+        }
+    }
+
+    // ---------- magnitude & distance -----------------------------------------------------------
+    #[test]
+    fn magnitude_matches_cube_formula() {
+        assert_eq!(AxialPos::new(0, 0).magnitude(), 0);
+        assert_eq!(AxialPos::new(1, 0).magnitude(), 1);
+        assert_eq!(AxialPos::new(1, -1).magnitude(), 1);
+        assert_eq!(AxialPos::new(2, -1).magnitude(), 2); // (2,-1,-1) → (2+1+1)/2 = 2
+    }
+
+    #[test]
+    fn distance_is_symmetric_and_correct() {
+        let a = AxialPos::new(2, -1);
+        let b = AxialPos::new(-1, 3);
+        assert_eq!(a.distance_from(&b), b.distance_from(&a));
+        assert_eq!(a.distance_from(&b), 4);
     }
 }

@@ -1,8 +1,8 @@
 mod storage;
 
 use bevy::{
-    math::{UVec2, Vec2},
-    prelude::{Bundle, Color, Component, Reflect, ReflectComponent},
+    math::{ UVec2, Vec2 },
+    prelude::{ Bundle, Color, Component, Reflect, ReflectComponent },
     render::sync_world::SyncToRenderWorld,
 };
 pub use storage::*;
@@ -27,7 +27,7 @@ impl TilePos {
     /// Converts a tile position (2D) into an index in a flattened vector (1D), assuming the
     /// tile position lies in a tilemap of the specified size.
     pub fn to_index(&self, tilemap_size: &TilemapSize) -> usize {
-        ((self.y * tilemap_size.x) + self.x) as usize
+        (self.y * tilemap_size.x + self.x) as usize
     }
 
     /// Checks to see if `self` lies within a tilemap of the specified size.
@@ -140,4 +140,45 @@ pub struct AnimatedTile {
     pub end: u32,
     /// The speed the animation plays back at.
     pub speed: f32,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use bevy::math::{ UVec2, Vec2 };
+
+    #[test]
+    fn tile_pos_to_index() {
+        let map_size = TilemapSize { x: 10, y: 10 };
+        let pos = TilePos::new(3, 4);
+        assert_eq!(pos.to_index(&map_size), 4 * 10 + 3);
+    }
+
+    #[test]
+    fn tile_pos_within_bounds() {
+        let map_size = TilemapSize { x: 8, y: 8 };
+        assert!(TilePos::new(7, 7).within_map_bounds(&map_size));
+        assert!(!TilePos::new(8, 0).within_map_bounds(&map_size));
+        assert!(!TilePos::new(0, 8).within_map_bounds(&map_size));
+    }
+
+    #[test]
+    fn conversions_round_trip() {
+        let original = TilePos::new(5, 6);
+
+        // TilePos → UVec2 → TilePos
+        let as_uvec: UVec2 = original.into();
+        assert_eq!(as_uvec, UVec2::new(5, 6));
+        let back: TilePos = as_uvec.into();
+        assert_eq!(back, original);
+
+        // TilePos → Vec2
+        let as_vec: Vec2 = original.into();
+        assert_eq!(as_vec, Vec2::new(5.0, 6.0));
+    }
+
+    #[test]
+    fn visible_default_is_true() {
+        assert!(TileVisible::default().0);
+    }
 }

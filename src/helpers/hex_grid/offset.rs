@@ -1,9 +1,9 @@
 //! Code for the offset coordinate system.
 
 use crate::helpers::hex_grid::axial::AxialPos;
-use crate::helpers::hex_grid::neighbors::{HexColDirection, HexDirection, HexRowDirection};
+use crate::helpers::hex_grid::neighbors::{ HexColDirection, HexDirection, HexRowDirection };
 use crate::tiles::TilePos;
-use crate::{TilemapGridSize, TilemapSize};
+use crate::{ TilemapGridSize, TilemapSize };
 use bevy::math::Vec2;
 
 #[derive(Clone, Copy, Debug, Ord, PartialOrd, Eq, PartialEq, Hash)]
@@ -30,7 +30,7 @@ impl RowOddPos {
     #[inline]
     pub fn corner_offset_in_world(
         corner_direction: HexRowDirection,
-        grid_size: &TilemapGridSize,
+        grid_size: &TilemapGridSize
     ) -> Vec2 {
         AxialPos::corner_offset_in_world_row(corner_direction, grid_size)
     }
@@ -41,7 +41,7 @@ impl RowOddPos {
     pub fn corner_in_world(
         &self,
         corner_direction: HexRowDirection,
-        grid_size: &TilemapGridSize,
+        grid_size: &TilemapGridSize
     ) -> Vec2 {
         let axial_pos = AxialPos::from(*self);
         axial_pos.corner_in_world_row(corner_direction, grid_size)
@@ -121,7 +121,7 @@ impl RowEvenPos {
     #[inline]
     pub fn corner_offset_in_world(
         corner_direction: HexRowDirection,
-        grid_size: &TilemapGridSize,
+        grid_size: &TilemapGridSize
     ) -> Vec2 {
         AxialPos::corner_offset_in_world_row(corner_direction, grid_size)
     }
@@ -132,7 +132,7 @@ impl RowEvenPos {
     pub fn corner_in_world(
         &self,
         corner_direction: HexRowDirection,
-        grid_size: &TilemapGridSize,
+        grid_size: &TilemapGridSize
     ) -> Vec2 {
         let axial_pos = AxialPos::from(*self);
         axial_pos.corner_in_world_row(corner_direction, grid_size)
@@ -212,7 +212,7 @@ impl ColOddPos {
     #[inline]
     pub fn corner_offset_in_world(
         corner_direction: HexColDirection,
-        grid_size: &TilemapGridSize,
+        grid_size: &TilemapGridSize
     ) -> Vec2 {
         AxialPos::corner_offset_in_world_col(corner_direction, grid_size)
     }
@@ -223,7 +223,7 @@ impl ColOddPos {
     pub fn corner_in_world(
         &self,
         corner_direction: HexColDirection,
-        grid_size: &TilemapGridSize,
+        grid_size: &TilemapGridSize
     ) -> Vec2 {
         let axial_pos = AxialPos::from(*self);
         axial_pos.corner_in_world_col(corner_direction, grid_size)
@@ -303,7 +303,7 @@ impl ColEvenPos {
     #[inline]
     pub fn corner_offset_in_world(
         corner_direction: HexColDirection,
-        grid_size: &TilemapGridSize,
+        grid_size: &TilemapGridSize
     ) -> Vec2 {
         AxialPos::corner_offset_in_world_col(corner_direction, grid_size)
     }
@@ -314,7 +314,7 @@ impl ColEvenPos {
     pub fn corner_in_world(
         &self,
         corner_direction: HexColDirection,
-        grid_size: &TilemapGridSize,
+        grid_size: &TilemapGridSize
     ) -> Vec2 {
         let axial_pos = AxialPos::from(*self);
         axial_pos.corner_in_world_col(corner_direction, grid_size)
@@ -367,5 +367,54 @@ impl From<&TilePos> for ColEvenPos {
             q: tile_pos.x as i32,
             r: tile_pos.y as i32,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{ TilemapSize };
+
+    // Helper: a 10 × 10 map that fits all positive test coordinates.
+    fn test_map_size() -> TilemapSize {
+        TilemapSize { x: 10, y: 10 }
+    }
+
+    #[test]
+    fn tilepos_round_trip_row_odd() {
+        let tp = TilePos { x: 3, y: 7 };
+        let pos = RowOddPos::from(&tp);
+        assert_eq!(pos.as_tile_pos_unchecked(), tp);
+        assert_eq!(pos.as_tile_pos_given_map_size(&test_map_size()), Some(tp));
+    }
+
+    #[test]
+    fn tilepos_round_trip_row_even() {
+        let tp = TilePos { x: 4, y: 1 };
+        let pos = RowEvenPos::from(&tp);
+        assert_eq!(pos.as_tile_pos_unchecked(), tp);
+        assert_eq!(pos.as_tile_pos_given_map_size(&test_map_size()), Some(tp));
+    }
+
+    #[test]
+    fn tilepos_round_trip_col_odd() {
+        let tp = TilePos { x: 2, y: 6 };
+        let pos = ColOddPos::from(&tp);
+        assert_eq!(pos.as_tile_pos_unchecked(), tp);
+        assert_eq!(pos.as_tile_pos_given_map_size(&test_map_size()), Some(tp));
+    }
+
+    #[test]
+    fn tilepos_round_trip_col_even() {
+        let tp = TilePos { x: 9, y: 0 };
+        let pos = ColEvenPos::from(&tp);
+        assert_eq!(pos.as_tile_pos_unchecked(), tp);
+        assert_eq!(pos.as_tile_pos_given_map_size(&test_map_size()), Some(tp));
+    }
+
+    #[test]
+    fn negative_coords_are_rejected() {
+        let bad = RowOddPos::new(-1, 4);
+        assert!(bad.as_tile_pos_given_map_size(&test_map_size()).is_none());
     }
 }
