@@ -4,7 +4,7 @@ use bevy_ecs_tilemap::{
     map::{TilemapId, TilemapSize, TilemapTexture, TilemapTileSize},
     tiles::{TileBundle, TilePos, TileStorage, TileTextureIndex},
 };
-use std::{collections::HashMap};
+use std::collections::HashMap;
 use thiserror::Error;
 
 use bevy::{asset::io::Reader, reflect::TypePath};
