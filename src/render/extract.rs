@@ -3,8 +3,8 @@ use bevy::{
     platform::collections::HashMap,
     prelude::*,
     render::Extract,
-    render::primitives::{ Aabb, Frustum },
-    render::render_resource::{ FilterMode, TextureFormat },
+    render::primitives::{Aabb, Frustum},
+    render::render_resource::{FilterMode, TextureFormat},
     render::sync_world::RenderEntity,
 };
 
@@ -17,15 +17,10 @@ use crate::tiles::TilePosOld;
 use crate::{
     FrustumCulling,
     map::{
-        TilemapId,
-        TilemapSize,
-        TilemapSpacing,
-        TilemapTexture,
-        TilemapTextureSize,
-        TilemapTileSize,
-        TilemapType,
+        TilemapId, TilemapSize, TilemapSpacing, TilemapTexture, TilemapTextureSize,
+        TilemapTileSize, TilemapType,
     },
-    tiles::{ TileColor, TileFlip, TilePos, TileTextureIndex, TileVisible },
+    tiles::{TileColor, TileFlip, TilePos, TileTextureIndex, TileVisible},
 };
 
 use super::chunk::PackedTileData;
@@ -84,16 +79,14 @@ impl ExtractedTilemapTexture {
         tile_size: TilemapTileSize,
         tile_spacing: TilemapSpacing,
         filtering: FilterMode,
-        image_assets: &Res<Assets<Image>>
+        image_assets: &Res<Assets<Image>>,
     ) -> ExtractedTilemapTexture {
         let (tile_count, texture_size, format) = match &texture {
             TilemapTexture::Single(handle) => {
-                let image = image_assets
-                    .get(handle)
-                    .expect(
-                        "Expected image to have finished loading if \
-                    it is being extracted as a texture!"
-                    );
+                let image = image_assets.get(handle).expect(
+                    "Expected image to have finished loading if \
+                    it is being extracted as a texture!",
+                );
                 let texture_size: TilemapTextureSize = image.size_f32().into();
                 let tile_count_x = (texture_size.x / (tile_size.x + tile_spacing.x)).floor();
                 let tile_count_y = (texture_size.y / (tile_size.y + tile_spacing.y)).floor();
@@ -106,12 +99,10 @@ impl ExtractedTilemapTexture {
             #[cfg(not(feature = "atlas"))]
             TilemapTexture::Vector(handles) => {
                 for handle in handles {
-                    let image = image_assets
-                        .get(handle)
-                        .expect(
-                            "Expected image to have finished loading if \
-                        it is being extracted as a texture!"
-                        );
+                    let image = image_assets.get(handle).expect(
+                        "Expected image to have finished loading if \
+                        it is being extracted as a texture!",
+                    );
                     let this_tile_size: TilemapTileSize = image.size_f32().into();
                     if this_tile_size != tile_size {
                         panic!(
@@ -122,15 +113,16 @@ impl ExtractedTilemapTexture {
                 }
                 let first_format = image_assets
                     .get(handles.first().unwrap())
-                    .unwrap().texture_descriptor.format;
+                    .unwrap()
+                    .texture_descriptor
+                    .format;
 
                 for handle in handles {
                     let image = image_assets.get(handle).unwrap();
                     if image.texture_descriptor.format != first_format {
                         panic!(
                             "Expected all provided image assets to have a format of: {:?} but found image with format: {:?}",
-                            first_format,
-                            image.texture_descriptor.format
+                            first_format, image.texture_descriptor.format
                         );
                     }
                 }
@@ -139,12 +131,10 @@ impl ExtractedTilemapTexture {
             }
             #[cfg(not(feature = "atlas"))]
             TilemapTexture::TextureContainer(image_handle) => {
-                let image = image_assets
-                    .get(image_handle)
-                    .expect(
-                        "Expected image to have finished loading if \
-                        it is being extracted as a texture!"
-                    );
+                let image = image_assets.get(image_handle).expect(
+                    "Expected image to have finished loading if \
+                        it is being extracted as a texture!",
+                );
                 let tile_size: TilemapTileSize = image.size_f32().into();
                 (
                     image.texture_descriptor.array_layer_count(),
@@ -180,7 +170,8 @@ pub struct ExtractedFrustum {
 
 impl ExtractedFrustum {
     pub fn intersects_obb(&self, aabb: &Aabb, transform_matrix: &Mat4) -> bool {
-        self.frustum.intersects_obb(aabb, &Affine3A::from_mat4(*transform_matrix), true, false)
+        self.frustum
+            .intersects_obb(aabb, &Affine3A::from_mat4(*transform_matrix), true, false)
     }
 }
 
@@ -201,59 +192,53 @@ pub fn extract(
                 &TileColor,
                 Option<&AnimatedTile>,
             ),
-            Or<
-                (
-                    Changed<TilePos>,
-                    Changed<TileVisible>,
-                    Changed<TileTextureIndex>,
-                    Changed<TileFlip>,
-                    Changed<TileColor>,
-                    Changed<AnimatedTile>,
-                )
-            >
-        >
+            Or<(
+                Changed<TilePos>,
+                Changed<TileVisible>,
+                Changed<TileTextureIndex>,
+                Changed<TileFlip>,
+                Changed<TileColor>,
+                Changed<AnimatedTile>,
+            )>,
+        >,
     >,
     tilemap_query: Extract<
-        Query<
-            (
-                &RenderEntity,
-                &GlobalTransform,
-                &TilemapTileSize,
-                &TilemapSpacing,
-                &TilemapGridSize,
-                &TilemapType,
-                &TilemapTexture,
-                &TilemapSize,
-                &InheritedVisibility,
-                &FrustumCulling,
-                &TilemapRenderSettings,
-                &TilemapAnchor,
-            )
-        >
+        Query<(
+            &RenderEntity,
+            &GlobalTransform,
+            &TilemapTileSize,
+            &TilemapSpacing,
+            &TilemapGridSize,
+            &TilemapType,
+            &TilemapTexture,
+            &TilemapSize,
+            &InheritedVisibility,
+            &FrustumCulling,
+            &TilemapRenderSettings,
+            &TilemapAnchor,
+        )>,
     >,
     changed_tilemap_query: Extract<
         Query<
             Entity,
-            Or<
-                (
-                    Added<TilemapType>,
-                    Changed<TilemapType>,
-                    Changed<GlobalTransform>,
-                    Changed<TilemapTexture>,
-                    Changed<TilemapTileSize>,
-                    Changed<TilemapSpacing>,
-                    Changed<TilemapGridSize>,
-                    Changed<TilemapSize>,
-                    Changed<InheritedVisibility>,
-                    Changed<FrustumCulling>,
-                    Changed<TilemapRenderSettings>,
-                    Changed<TilemapAnchor>,
-                )
-            >
-        >
+            Or<(
+                Added<TilemapType>,
+                Changed<TilemapType>,
+                Changed<GlobalTransform>,
+                Changed<TilemapTexture>,
+                Changed<TilemapTileSize>,
+                Changed<TilemapSpacing>,
+                Changed<TilemapGridSize>,
+                Changed<TilemapSize>,
+                Changed<InheritedVisibility>,
+                Changed<FrustumCulling>,
+                Changed<TilemapRenderSettings>,
+                Changed<TilemapAnchor>,
+            )>,
+        >,
     >,
     camera_query: Extract<Query<(&RenderEntity, &Frustum), With<Camera>>>,
-    images: Extract<Res<Assets<Image>>>
+    images: Extract<Res<Assets<Image>>>,
 ) {
     let mut extracted_tiles = Vec::new();
     let mut extracted_tilemaps = <HashMap<_, _>>::default();
@@ -269,7 +254,8 @@ pub fn extract(
         flip,
         color,
         animated,
-    ) in changed_tiles_query.iter() {
+    ) in changed_tiles_query.iter()
+    {
         // flipping and rotation packed in bits
         // bit 0 : flip_x
         // bit 1 : flip_y
@@ -296,24 +282,27 @@ pub fn extract(
 
         let data = tilemap_query.get(tilemap_id.0).unwrap();
 
-        extracted_tilemaps.insert(data.0.id(), (
+        extracted_tilemaps.insert(
             data.0.id(),
-            ExtractedTilemapBundle {
-                transform: *data.1,
-                tile_size: *data.2,
-                texture_size: TilemapTextureSize::default(),
-                spacing: *data.3,
-                grid_size: *data.4,
-                map_type: *data.5,
-                texture: data.6.clone_weak(),
-                map_size: *data.7,
-                visibility: *data.8,
-                frustum_culling: *data.9,
-                render_settings: *data.10,
-                changed: ChangedInMainWorld,
-                anchor: *data.11,
-            },
-        ));
+            (
+                data.0.id(),
+                ExtractedTilemapBundle {
+                    transform: *data.1,
+                    tile_size: *data.2,
+                    texture_size: TilemapTextureSize::default(),
+                    spacing: *data.3,
+                    grid_size: *data.4,
+                    map_type: *data.5,
+                    texture: data.6.clone_weak(),
+                    map_size: *data.7,
+                    visibility: *data.8,
+                    frustum_culling: *data.9,
+                    render_settings: *data.10,
+                    changed: ChangedInMainWorld,
+                    anchor: *data.11,
+                },
+            ),
+        );
         extracted_tiles.push((
             render_entity.id(),
             ExtractedTileBundle {
@@ -331,47 +320,36 @@ pub fn extract(
 
     for tilemap_entity in changed_tilemap_query.iter() {
         if let Ok(data) = tilemap_query.get(tilemap_entity) {
-            extracted_tilemaps.insert(data.0.id(), (
+            extracted_tilemaps.insert(
                 data.0.id(),
-                ExtractedTilemapBundle {
-                    transform: *data.1,
-                    tile_size: *data.2,
-                    texture_size: TilemapTextureSize::default(),
-                    spacing: *data.3,
-                    grid_size: *data.4,
-                    map_type: *data.5,
-                    texture: data.6.clone_weak(),
-                    map_size: *data.7,
-                    visibility: *data.8,
-                    frustum_culling: *data.9,
-                    render_settings: *data.10,
-                    changed: ChangedInMainWorld,
-                    anchor: *data.11,
-                },
-            ));
+                (
+                    data.0.id(),
+                    ExtractedTilemapBundle {
+                        transform: *data.1,
+                        tile_size: *data.2,
+                        texture_size: TilemapTextureSize::default(),
+                        spacing: *data.3,
+                        grid_size: *data.4,
+                        map_type: *data.5,
+                        texture: data.6.clone_weak(),
+                        map_size: *data.7,
+                        visibility: *data.8,
+                        frustum_culling: *data.9,
+                        render_settings: *data.10,
+                        changed: ChangedInMainWorld,
+                        anchor: *data.11,
+                    },
+                ),
+            );
         }
     }
 
-    let extracted_tilemaps: Vec<_> = extracted_tilemaps
-        .drain()
-        .map(|(_, val)| val)
-        .collect();
+    let extracted_tilemaps: Vec<_> = extracted_tilemaps.drain().map(|(_, val)| val).collect();
 
     // Extracts tilemap textures.
-    for (
-        render_entity,
-        _,
-        tile_size,
-        tile_spacing,
-        _,
-        _,
-        texture,
-        _,
-        _,
-        _,
-        _,
-        _,
-    ) in tilemap_query.iter() {
+    for (render_entity, _, tile_size, tile_spacing, _, _, texture, _, _, _, _, _) in
+        tilemap_query.iter()
+    {
         if texture.verify_ready(&images) {
             extracted_tilemap_textures.push((
                 render_entity.id(),
@@ -382,7 +360,7 @@ pub fn extract(
                         *tile_size,
                         *tile_spacing,
                         default_image_settings.0.min_filter.into(),
-                        &images
+                        &images,
                     ),
                     changed: ChangedInMainWorld,
                 },
@@ -391,7 +369,9 @@ pub fn extract(
     }
 
     for (render_entity, frustum) in camera_query.iter() {
-        commands.entity(render_entity.id()).insert(ExtractedFrustum { frustum: *frustum });
+        commands
+            .entity(render_entity.id())
+            .insert(ExtractedFrustum { frustum: *frustum });
     }
 
     commands.insert_batch(extracted_tiles);

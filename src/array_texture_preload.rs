@@ -1,12 +1,15 @@
-use crate::render::{ DefaultSampler, TextureArrayCache };
-use crate::{ TilemapTexture, prelude::{ TilemapSpacing, TilemapTileSize } };
-use bevy::render::render_resource::{ FilterMode, TextureFormat };
+use crate::render::{DefaultSampler, TextureArrayCache};
+use crate::{
+    TilemapTexture,
+    prelude::{TilemapSpacing, TilemapTileSize},
+};
+use bevy::render::render_resource::{FilterMode, TextureFormat};
 use bevy::{
     image::BevyDefault,
-    prelude::{ Assets, Image, Res, ResMut, Resource },
+    prelude::{Assets, Image, Res, ResMut, Resource},
     render::Extract,
 };
-use std::sync::{ Arc, RwLock };
+use std::sync::{Arc, RwLock};
 
 #[derive(Debug, Clone)]
 pub struct TilemapArrayTexture {
@@ -57,11 +60,13 @@ pub(crate) fn extract(
     images: Extract<Res<Assets<Image>>>,
     array_texture_loader: Extract<Res<ArrayTextureLoader>>,
     mut texture_array_cache: ResMut<TextureArrayCache>,
-    default_image_settings: Res<DefaultSampler>
+    default_image_settings: Res<DefaultSampler>,
 ) {
     for mut array_texture in array_texture_loader.drain() {
         if array_texture.filter.is_none() {
-            array_texture.filter.replace(default_image_settings.mag_filter.into());
+            array_texture
+                .filter
+                .replace(default_image_settings.mag_filter.into());
         }
         if array_texture.texture.verify_ready(&images) {
             texture_array_cache.add_texture(
@@ -70,7 +75,7 @@ pub(crate) fn extract(
                 array_texture.tile_spacing,
                 default_image_settings.min_filter.into(),
                 array_texture.format,
-                &images
+                &images,
             );
         } else {
             // Image hasn't loaded yet punt to next frame.
@@ -89,8 +94,20 @@ mod tests {
         let tex = TilemapArrayTexture::default();
 
         assert!(tex.filter.is_none(), "Filter should start unset (None)");
-        assert_eq!(tex.texture, TilemapTexture::default(), "Texture default mismatch");
-        assert_eq!(tex.tile_size, TilemapTileSize::default(), "Tile size default mismatch");
-        assert_eq!(tex.tile_spacing, TilemapSpacing::default(), "Tile spacing default mismatch");
+        assert_eq!(
+            tex.texture,
+            TilemapTexture::default(),
+            "Texture default mismatch"
+        );
+        assert_eq!(
+            tex.tile_size,
+            TilemapTileSize::default(),
+            "Tile size default mismatch"
+        );
+        assert_eq!(
+            tex.tile_spacing,
+            TilemapSpacing::default(),
+            "Tile spacing default mismatch"
+        );
     }
 }

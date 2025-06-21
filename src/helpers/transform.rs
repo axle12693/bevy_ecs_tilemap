@@ -1,6 +1,6 @@
 use crate::tiles::TilePos;
-use crate::{ TilemapGridSize, TilemapTileSize, TilemapType };
-use bevy::math::{ UVec2, Vec2, Vec3 };
+use crate::{TilemapGridSize, TilemapTileSize, TilemapType};
+use bevy::math::{UVec2, Vec2, Vec3};
 use bevy::render::primitives::Aabb;
 
 /// Calculates the world-space position of the bottom-left of the specified chunk.
@@ -8,7 +8,7 @@ pub fn chunk_index_to_world_space(
     chunk_index: UVec2,
     chunk_size: UVec2,
     grid_size: &TilemapGridSize,
-    map_type: &TilemapType
+    map_type: &TilemapType,
 ) -> Vec2 {
     // Get the position of the bottom left tile of the chunk: the "anchor tile".
     let anchor_tile_pos = TilePos {
@@ -30,7 +30,7 @@ pub fn chunk_aabb(
     chunk_size: UVec2,
     grid_size: &TilemapGridSize,
     tile_size: &TilemapTileSize,
-    map_type: &TilemapType
+    map_type: &TilemapType,
 ) -> Aabb {
     // The AABB minimum and maximum have to be modified by -border and +border respectively.
     let border = Vec2::from(grid_size).max(tile_size.into()) / 2.0;
@@ -55,7 +55,7 @@ pub fn chunk_aabb(
 mod tests {
     use super::*;
     use approx::assert_relative_eq;
-    use bevy::math::{ UVec2, Vec3 };
+    use bevy::math::{UVec2, Vec3};
 
     #[test]
     fn chunk_index_to_world_space_origin_square() {
@@ -63,7 +63,8 @@ mod tests {
         let grid_size = TilemapGridSize { x: 1.0, y: 1.0 };
 
         // Bottom-left chunk (index 0,0) should have its anchor-tile centre at (0.0, 0.0)
-        let ws = chunk_index_to_world_space(UVec2::ZERO, chunk_size, &grid_size, &TilemapType::Square);
+        let ws =
+            chunk_index_to_world_space(UVec2::ZERO, chunk_size, &grid_size, &TilemapType::Square);
         assert_relative_eq!(ws.x, 0.0, epsilon = 1e-6);
         assert_relative_eq!(ws.y, 0.0, epsilon = 1e-6);
     }

@@ -3,12 +3,12 @@ pub mod neighbors;
 pub mod staggered;
 
 use crate::helpers::square_grid::diamond::DiamondPos;
-use crate::helpers::square_grid::neighbors::{ SQUARE_OFFSETS, SquareDirection };
+use crate::helpers::square_grid::neighbors::{SQUARE_OFFSETS, SquareDirection};
 use crate::helpers::square_grid::staggered::StaggeredPos;
 use crate::tiles::TilePos;
-use crate::{ TilemapGridSize, TilemapSize };
+use crate::{TilemapGridSize, TilemapSize};
 use bevy::math::Vec2;
-use std::ops::{ Add, Mul, Sub };
+use std::ops::{Add, Mul, Sub};
 
 /// Position for tiles arranged in a square coordinate system.
 ///
@@ -128,7 +128,7 @@ impl SquarePos {
     #[inline]
     pub fn corner_offset_in_world(
         corner_direction: SquareDirection,
-        grid_size: &TilemapGridSize
+        grid_size: &TilemapGridSize,
     ) -> Vec2 {
         let corner_offset = SquarePos::from(corner_direction);
         let corner_pos = 0.5 * Vec2::new(corner_offset.x as f32, corner_offset.y as f32);
@@ -141,7 +141,7 @@ impl SquarePos {
     pub fn corner_in_world(
         &self,
         corner_direction: SquareDirection,
-        grid_size: &TilemapGridSize
+        grid_size: &TilemapGridSize,
     ) -> Vec2 {
         let center = Vec2::new(self.x as f32, self.y as f32);
 
@@ -185,9 +185,11 @@ impl TilePos {
     pub fn square_offset(
         &self,
         direction: &SquareDirection,
-        map_size: &TilemapSize
+        map_size: &TilemapSize,
     ) -> Option<TilePos> {
-        SquarePos::from(self).offset(direction).as_tile_pos(map_size)
+        SquarePos::from(self)
+            .offset(direction)
+            .as_tile_pos(map_size)
     }
 }
 
@@ -195,7 +197,7 @@ impl TilePos {
 mod tests {
     use super::*;
     use crate::helpers::square_grid::neighbors::SquareDirection;
-    use crate::{ TilemapGridSize, TilemapSize, tiles::TilePos };
+    use crate::{TilemapGridSize, TilemapSize, tiles::TilePos};
 
     fn gs() -> TilemapGridSize {
         TilemapGridSize { x: 32.0, y: 32.0 }

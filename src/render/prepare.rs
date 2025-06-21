@@ -2,37 +2,32 @@ use std::marker::PhantomData;
 
 use crate::anchor::TilemapAnchor;
 use crate::map::{
-    TilemapId,
-    TilemapSize,
-    TilemapSpacing,
-    TilemapTexture,
-    TilemapTextureSize,
-    TilemapTileSize,
+    TilemapId, TilemapSize, TilemapSpacing, TilemapTexture, TilemapTextureSize, TilemapTileSize,
     TilemapType,
 };
 use crate::prelude::TilemapRenderSettings;
 use crate::render::extract::ExtractedFrustum;
-use crate::{ FrustumCulling, prelude::TilemapGridSize, render::RenderChunkSize };
+use crate::{FrustumCulling, prelude::TilemapGridSize, render::RenderChunkSize};
 use bevy::log::trace;
-use bevy::prelude::{ InheritedVisibility, Resource, Transform, With };
+use bevy::prelude::{InheritedVisibility, Resource, Transform, With};
 use bevy::render::mesh::MeshVertexBufferLayouts;
 use bevy::render::sync_world::TemporaryRenderEntity;
 use bevy::{
-    math::{ Mat4, UVec4 },
-    prelude::{ Commands, Component, Entity, GlobalTransform, Query, Res, ResMut, Vec2 },
+    math::{Mat4, UVec4},
+    prelude::{Commands, Component, Entity, GlobalTransform, Query, Res, ResMut, Vec2},
     render::{
-        render_resource::{ DynamicUniformBuffer, ShaderType },
-        renderer::{ RenderDevice, RenderQueue },
+        render_resource::{DynamicUniformBuffer, ShaderType},
+        renderer::{RenderDevice, RenderQueue},
     },
 };
 
 use super::extract::ChangedInMainWorld;
 use super::{
     DynamicUniformIndex,
-    chunk::{ ChunkId, PackedTileData, RenderChunk2dStorage, TilemapUniformData },
-    extract::{ ExtractedTile, ExtractedTilemapTexture },
+    chunk::{ChunkId, PackedTileData, RenderChunk2dStorage, TilemapUniformData},
+    extract::{ExtractedTile, ExtractedTilemapTexture},
 };
-use super::{ RemovedMapEntity, RemovedTileEntity };
+use super::{RemovedMapEntity, RemovedTileEntity};
 
 #[derive(Resource, Default)]
 pub struct MeshUniformResource(pub DynamicUniformBuffer<MeshUniform>);
@@ -68,13 +63,13 @@ pub(crate) fn prepare(
             &TilemapRenderSettings,
             &TilemapAnchor,
         ),
-        With<ChangedInMainWorld>
+        With<ChangedInMainWorld>,
     >,
     extracted_tilemap_textures: Query<&ExtractedTilemapTexture, With<ChangedInMainWorld>>,
     extracted_frustum_query: Query<&ExtractedFrustum>,
     render_device: Res<RenderDevice>,
     render_queue: Res<RenderQueue>,
-    mut mesh_vertex_buffer_layouts: ResMut<MeshVertexBufferLayouts>
+    mut mesh_vertex_buffer_layouts: ResMut<MeshVertexBufferLayouts>,
 ) {
     for tile in extracted_tiles.iter() {
         // First if the tile position has changed remove the tile from the old location.
@@ -104,7 +99,7 @@ pub(crate) fn prepare(
             chunk_index.x,
             chunk_index.y,
             transform.translation().z as u32,
-            tile.tilemap_id.0.index()
+            tile.tilemap_id.0.index(),
         );
 
         let in_chunk_tile_index = chunk_size.map_tile_to_chunk_tile(&tile.position, &chunk_index);
@@ -125,7 +120,7 @@ pub(crate) fn prepare(
             visibility,
             frustum_culling,
             chunk_size,
-            tilemap_render_settings.y_sort
+            tilemap_render_settings.y_sort,
         );
         chunk.set(
             &in_chunk_tile_index.into(),
@@ -136,7 +131,7 @@ pub(crate) fn prepare(
                     .extend(tile.tile.position.z)
                     .extend(tile.tile.position.w),
                 ..tile.tile
-            })
+            }),
         );
     }
 
@@ -155,7 +150,8 @@ pub(crate) fn prepare(
         frustum_culling,
         _,
         anchor,
-    ) in extracted_tilemaps.iter() {
+    ) in extracted_tilemaps.iter()
+    {
         let chunks = chunk_storage.get_chunk_storage(&UVec4::new(0, 0, 0, entity.index()));
         for chunk in chunks.values_mut() {
             chunk.texture = texture.clone();
@@ -183,9 +179,8 @@ pub(crate) fn prepare(
 
     for tilemap in extracted_tilemap_textures.iter() {
         let texture_size: Vec2 = tilemap.texture_size.into();
-        let chunks = chunk_storage.get_chunk_storage(
-            &UVec4::new(0, 0, 0, tilemap.tilemap_id.0.index())
-        );
+        let chunks =
+            chunk_storage.get_chunk_storage(&UVec4::new(0, 0, 0, tilemap.tilemap_id.0.index()));
         for chunk in chunks.values_mut() {
             chunk.texture_size = texture_size;
         }
@@ -200,9 +195,10 @@ pub(crate) fn prepare(
             continue;
         }
 
-        if
-            chunk.frustum_culling &&
-            !extracted_frustum_query.iter().any(|frustum| chunk.intersects_frustum(frustum))
+        if chunk.frustum_culling
+            && !extracted_frustum_query
+                .iter()
+                .any(|frustum| chunk.intersects_frustum(frustum))
         {
             trace!("Frustum culled chunk: {:?}", chunk.get_index());
             continue;
@@ -222,7 +218,7 @@ pub(crate) fn prepare(
                 index: mesh_uniforms.0.push(
                     &(MeshUniform {
                         transform: chunk.get_transform_matrix(),
-                    })
+                    }),
                 ),
                 marker: PhantomData,
             },
@@ -235,13 +231,15 @@ pub(crate) fn prepare(
     }
 
     mesh_uniforms.0.write_buffer(&render_device, &render_queue);
-    tilemap_uniforms.0.write_buffer(&render_device, &render_queue);
+    tilemap_uniforms
+        .0
+        .write_buffer(&render_device, &render_queue);
 }
 
 pub fn prepare_removal(
     mut chunk_storage: ResMut<RenderChunk2dStorage>,
     removed_tiles: Query<&RemovedTileEntity>,
-    removed_maps: Query<&RemovedMapEntity>
+    removed_maps: Query<&RemovedMapEntity>,
 ) {
     for removed_tile in removed_tiles.iter() {
         chunk_storage.remove_tile_with_entity(removed_tile.0.id());

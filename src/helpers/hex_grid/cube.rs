@@ -1,7 +1,10 @@
 //! Code for the cube coordinate system
 
-use crate::{ helpers::hex_grid::axial::{ AxialPos, FractionalAxialPos }, tiles::TilePos };
-use std::ops::{ Add, Mul, Sub };
+use crate::{
+    helpers::hex_grid::axial::{AxialPos, FractionalAxialPos},
+    tiles::TilePos,
+};
+use std::ops::{Add, Mul, Sub};
 
 /// Identical to [`AxialPos`], but has an extra component `s`. Together, `q`, `r`, `s`
 /// satisfy the identity: `q + r + s = 0`.
@@ -176,7 +179,7 @@ impl FractionalCubePos {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::helpers::hex_grid::axial::{ AxialPos };
+    use crate::helpers::hex_grid::axial::AxialPos;
 
     #[test]
     fn axial_to_cube_preserves_identity() {

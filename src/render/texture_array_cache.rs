@@ -1,29 +1,19 @@
 use crate::render::extract::ExtractedTilemapTexture;
-use crate::{ TilemapSpacing, TilemapTexture, TilemapTextureSize, TilemapTileSize };
+use crate::{TilemapSpacing, TilemapTexture, TilemapTextureSize, TilemapTileSize};
 use bevy::asset::Assets;
-use bevy::prelude::{ ResMut, Resource };
+use bevy::prelude::{ResMut, Resource};
 use bevy::render::render_resource::TexelCopyTextureInfo;
 use bevy::{
-    platform::collections::{ HashMap, HashSet },
-    prelude::{ Image, Res },
+    platform::collections::{HashMap, HashSet},
+    prelude::{Image, Res},
     render::{
         render_asset::RenderAssets,
         render_resource::{
-            AddressMode,
-            CommandEncoderDescriptor,
-            Extent3d,
-            FilterMode,
-            Origin3d,
-            SamplerDescriptor,
-            TextureAspect,
-            TextureDescriptor,
-            TextureDimension,
-            TextureFormat,
-            TextureUsages,
-            TextureViewDescriptor,
-            TextureViewDimension,
+            AddressMode, CommandEncoderDescriptor, Extent3d, FilterMode, Origin3d,
+            SamplerDescriptor, TextureAspect, TextureDescriptor, TextureDimension, TextureFormat,
+            TextureUsages, TextureViewDescriptor, TextureViewDimension,
         },
-        renderer::{ RenderDevice, RenderQueue },
+        renderer::{RenderDevice, RenderQueue},
         texture::GpuImage,
     },
 };
@@ -35,7 +25,14 @@ pub struct TextureArrayCache {
     textures: HashMap<TilemapTexture, GpuImage>,
     meta_data: HashMap<
         TilemapTexture,
-        (u32, TilemapTileSize, TilemapTextureSize, TilemapSpacing, FilterMode, TextureFormat)
+        (
+            u32,
+            TilemapTileSize,
+            TilemapTextureSize,
+            TilemapSpacing,
+            FilterMode,
+            TextureFormat,
+        ),
     >,
     prepare_queue: HashSet<TilemapTexture>,
     queue_queue: HashSet<TilemapTexture>,
@@ -49,15 +46,19 @@ impl TextureArrayCache {
     /// checks, as this is assumed to have been done during [`ExtractedTilemapTexture::new`].
     pub(crate) fn add_extracted_texture(&mut self, extracted_texture: &ExtractedTilemapTexture) {
         if !self.meta_data.contains_key(&extracted_texture.texture) {
-            self.meta_data.insert(extracted_texture.texture.clone_weak(), (
-                extracted_texture.tile_count,
-                extracted_texture.tile_size,
-                extracted_texture.texture_size,
-                extracted_texture.tile_spacing,
-                extracted_texture.filtering,
-                extracted_texture.format,
-            ));
-            self.prepare_queue.insert(extracted_texture.texture.clone_weak());
+            self.meta_data.insert(
+                extracted_texture.texture.clone_weak(),
+                (
+                    extracted_texture.tile_count,
+                    extracted_texture.tile_size,
+                    extracted_texture.texture_size,
+                    extracted_texture.tile_spacing,
+                    extracted_texture.filtering,
+                    extracted_texture.format,
+                ),
+            );
+            self.prepare_queue
+                .insert(extracted_texture.texture.clone_weak());
         }
     }
 
@@ -69,16 +70,14 @@ impl TextureArrayCache {
         tile_spacing: TilemapSpacing,
         filtering: FilterMode,
         format: TextureFormat,
-        image_assets: &Res<Assets<Image>>
+        image_assets: &Res<Assets<Image>>,
     ) {
         let (tile_count, texture_size) = match &texture {
             TilemapTexture::Single(handle) => {
-                let image = image_assets
-                    .get(handle)
-                    .expect(
-                        "Expected image to have finished loading if \
-                    it is being extracted as a texture!"
-                    );
+                let image = image_assets.get(handle).expect(
+                    "Expected image to have finished loading if \
+                    it is being extracted as a texture!",
+                );
                 let texture_size: TilemapTextureSize = image.size_f32().into();
                 let tile_count_x = (texture_size.x / (tile_size.x + tile_spacing.x)).floor();
                 let tile_count_y = (texture_size.y / (tile_size.y + tile_spacing.y)).floor();
@@ -86,12 +85,10 @@ impl TextureArrayCache {
             }
             TilemapTexture::Vector(handles) => {
                 for handle in handles {
-                    let image = image_assets
-                        .get(handle)
-                        .expect(
-                            "Expected image to have finished loading if \
-                        it is being extracted as a texture!"
-                        );
+                    let image = image_assets.get(handle).expect(
+                        "Expected image to have finished loading if \
+                        it is being extracted as a texture!",
+                    );
                     let this_tile_size: TilemapTileSize = image.size_f32().into();
                     if this_tile_size != tile_size {
                         panic!(
@@ -103,26 +100,30 @@ impl TextureArrayCache {
                 (handles.len() as u32, tile_size.into())
             }
             TilemapTexture::TextureContainer(handle) => {
-                let image = image_assets
-                    .get(handle)
-                    .expect(
-                        "Expected image to have finished loading if \
-                        it is being extracted as a texture!"
-                    );
+                let image = image_assets.get(handle).expect(
+                    "Expected image to have finished loading if \
+                        it is being extracted as a texture!",
+                );
                 let tile_size: TilemapTileSize = image.size_f32().into();
-                (image.texture_descriptor.array_layer_count(), tile_size.into())
+                (
+                    image.texture_descriptor.array_layer_count(),
+                    tile_size.into(),
+                )
             }
         };
 
         if !self.meta_data.contains_key(&texture) {
-            self.meta_data.insert(texture.clone_weak(), (
-                tile_count,
-                tile_size,
-                texture_size,
-                tile_spacing,
-                filtering,
-                format,
-            ));
+            self.meta_data.insert(
+                texture.clone_weak(),
+                (
+                    tile_count,
+                    tile_size,
+                    texture_size,
+                    tile_spacing,
+                    filtering,
+                    format,
+                ),
+            );
             self.prepare_queue.insert(texture.clone_weak());
         }
     }
@@ -139,7 +140,7 @@ impl TextureArrayCache {
     pub fn prepare(
         &mut self,
         render_device: &RenderDevice,
-        render_images: &Res<RenderAssets<GpuImage>>
+        render_images: &Res<RenderAssets<GpuImage>>,
     ) {
         let prepare_queue = self.prepare_queue.drain().collect::<Vec<_>>();
         for texture in prepare_queue.iter() {
@@ -153,12 +154,15 @@ impl TextureArrayCache {
 
             match texture {
                 TilemapTexture::Single(_) | TilemapTexture::Vector(_) => {
-                    let (count, tile_size, _, _, filter, format) = self.meta_data
-                        .get(texture)
-                        .unwrap();
+                    let (count, tile_size, _, _, filter, format) =
+                        self.meta_data.get(texture).unwrap();
 
                     // Fixes issue where wgpu's gles texture type inference fails.
-                    let count = if *count == 1 || count % 6 == 0 { count + 1 } else { *count };
+                    let count = if *count == 1 || count % 6 == 0 {
+                        count + 1
+                    } else {
+                        *count
+                    };
 
                     let gpu_texture = render_device.create_texture(
                         &(TextureDescriptor {
@@ -174,7 +178,7 @@ impl TextureArrayCache {
                             format: *format,
                             usage: TextureUsages::COPY_DST | TextureUsages::TEXTURE_BINDING,
                             view_formats: &[],
-                        })
+                        }),
                     );
 
                     let sampler = render_device.create_sampler(
@@ -191,7 +195,7 @@ impl TextureArrayCache {
                             compare: None,
                             anisotropy_clamp: 1,
                             border_color: None,
-                        })
+                        }),
                     );
 
                     let texture_view = gpu_texture.create_view(
@@ -205,7 +209,7 @@ impl TextureArrayCache {
                             base_array_layer: 0,
                             array_layer_count: Some(count),
                             usage: Some(gpu_texture.usage()),
-                        })
+                        }),
                     );
 
                     let mip_level_count = gpu_texture.mip_level_count();
@@ -228,7 +232,8 @@ impl TextureArrayCache {
                 }
                 TilemapTexture::TextureContainer(handle) => {
                     if let Some(gpu_image) = render_images.get(handle) {
-                        self.textures.insert(texture.clone_weak(), gpu_image.clone());
+                        self.textures
+                            .insert(texture.clone_weak(), gpu_image.clone());
                     } else {
                         self.prepare_queue.insert(texture.clone_weak());
                     }
@@ -241,7 +246,7 @@ impl TextureArrayCache {
         &mut self,
         render_device: &RenderDevice,
         render_queue: &RenderQueue,
-        render_images: &Res<RenderAssets<GpuImage>>
+        render_images: &Res<RenderAssets<GpuImage>>,
     ) {
         let queue_queue = self.queue_queue.drain().collect::<Vec<_>>();
 
@@ -255,16 +260,15 @@ impl TextureArrayCache {
                         continue;
                     };
 
-                    let (count, tile_size, texture_size, spacing, _, _) = self.meta_data
-                        .get(texture)
-                        .unwrap();
+                    let (count, tile_size, texture_size, spacing, _, _) =
+                        self.meta_data.get(texture).unwrap();
                     let array_gpu_image = self.textures.get(texture).unwrap();
                     let count = *count;
 
                     let mut command_encoder = render_device.create_command_encoder(
                         &(CommandEncoderDescriptor {
                             label: Some("create_texture_array_from_atlas"),
-                        })
+                        }),
                     );
 
                     for i in 0..count {
@@ -295,7 +299,7 @@ impl TextureArrayCache {
                                 width: tile_size.x as u32,
                                 height: tile_size.y as u32,
                                 depth_or_array_layers: 1,
-                            }
+                            },
                         );
                     }
 
@@ -320,7 +324,7 @@ impl TextureArrayCache {
                     let mut command_encoder = render_device.create_command_encoder(
                         &(CommandEncoderDescriptor {
                             label: Some("create_texture_array_from_handles_vec"),
-                        })
+                        }),
                     );
 
                     for i in 0..count {
@@ -341,7 +345,7 @@ impl TextureArrayCache {
                                 width: tile_size.x as u32,
                                 height: tile_size.y as u32,
                                 depth_or_array_layers: 1,
-                            }
+                            },
                         );
                     }
 
@@ -361,13 +365,17 @@ impl TextureArrayCache {
 /// responsive to hot-reloading, for example.
 pub fn remove_modified_textures(
     modified_image_ids: Res<ModifiedImageIds>,
-    mut texture_cache: ResMut<TextureArrayCache>
+    mut texture_cache: ResMut<TextureArrayCache>,
 ) {
-    let texture_is_unmodified = |texture: &TilemapTexture|
-        !modified_image_ids.is_texture_modified(texture);
+    let texture_is_unmodified =
+        |texture: &TilemapTexture| !modified_image_ids.is_texture_modified(texture);
 
-    texture_cache.textures.retain(|texture, _| texture_is_unmodified(texture));
-    texture_cache.meta_data.retain(|texture, _| texture_is_unmodified(texture));
+    texture_cache
+        .textures
+        .retain(|texture, _| texture_is_unmodified(texture));
+    texture_cache
+        .meta_data
+        .retain(|texture, _| texture_is_unmodified(texture));
     texture_cache.prepare_queue.retain(texture_is_unmodified);
     texture_cache.queue_queue.retain(texture_is_unmodified);
     texture_cache.bad_flag_queue.retain(texture_is_unmodified);

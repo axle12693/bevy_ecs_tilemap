@@ -1,7 +1,7 @@
-use bevy_ecs_tilemap::helpers::hex_grid::neighbors::{ HexNeighbors, HexDirection };
+use bevy_ecs_tilemap::helpers::hex_grid::neighbors::{HexDirection, HexNeighbors};
+use bevy_ecs_tilemap::map::HexCoordSystem;
 use bevy_ecs_tilemap::map::TilemapSize;
 use bevy_ecs_tilemap::tiles::TilePos;
-use bevy_ecs_tilemap::map::HexCoordSystem;
 
 fn pos(x: u32, y: u32) -> TilePos {
     TilePos { x, y }
@@ -14,11 +14,8 @@ fn border_tiles_clamp_neighbors_out_of_bounds() {
     // South-west corner
     let corner = pos(0, 2);
 
-    let neighbors = HexNeighbors::<TilePos>::get_neighboring_positions(
-        &corner,
-        &size,
-        &HexCoordSystem::Row
-    );
+    let neighbors =
+        HexNeighbors::<TilePos>::get_neighboring_positions(&corner, &size, &HexCoordSystem::Row);
 
     for dir in [HexDirection::One, HexDirection::Two, HexDirection::Three] {
         assert!(neighbors.get(dir).is_none(), "{dir:?} should be None");

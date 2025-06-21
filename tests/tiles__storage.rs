@@ -1,5 +1,5 @@
-use bevy::{ ecs::world::CommandQueue, prelude::* };
-use bevy_ecs_tilemap::prelude::{ TilemapSize, TilePos, TileStorage };
+use bevy::{ecs::world::CommandQueue, prelude::*};
+use bevy_ecs_tilemap::prelude::{TilePos, TileStorage, TilemapSize};
 
 #[test]
 fn drain_can_be_used_to_despawn_entities() {
@@ -20,7 +20,11 @@ fn drain_can_be_used_to_despawn_entities() {
     // Use Commands-style despawning exactly as the docs example shows
     let mut queue = CommandQueue::default();
     {
-        let mut storage = app.world_mut().entity_mut(storage_entity).take::<TileStorage>().unwrap();
+        let mut storage = app
+            .world_mut()
+            .entity_mut(storage_entity)
+            .take::<TileStorage>()
+            .unwrap();
         let mut commands = Commands::new(&mut queue, &app.world());
         for entity in storage.drain() {
             commands.entity(entity).despawn();

@@ -1,6 +1,6 @@
 use bevy_ecs_tilemap::{
-    helpers::square_grid::{ neighbors::SquareDirection::*, staggered::StaggeredPos },
-    map::{ TilemapGridSize, TilemapSize },
+    helpers::square_grid::{neighbors::SquareDirection::*, staggered::StaggeredPos},
+    map::{TilemapGridSize, TilemapSize},
     tiles::TilePos,
 };
 
@@ -20,7 +20,10 @@ fn tilepos_staggered_offset() {
     let map = TilemapSize { x: 3, y: 3 };
 
     let origin = TilePos { x: 1, y: 1 };
-    assert_eq!(origin.staggered_offset(&North, &map).unwrap(), TilePos { x: 1, y: 2 });
+    assert_eq!(
+        origin.staggered_offset(&North, &map).unwrap(),
+        TilePos { x: 1, y: 2 }
+    );
 
     // Edge should return None
     let edge = TilePos { x: 0, y: 0 };

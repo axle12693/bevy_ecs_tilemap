@@ -1,7 +1,10 @@
 use bevy_ecs_tilemap::{
-    helpers::square_grid::{ neighbors::{ Neighbors, SquareDirection }, staggered::StaggeredPos },
+    helpers::square_grid::{
+        neighbors::{Neighbors, SquareDirection},
+        staggered::StaggeredPos,
+    },
     map::TilemapSize,
-    tiles::{ TilePos, TileStorage },
+    tiles::{TilePos, TileStorage},
 };
 
 #[test]
@@ -54,22 +57,29 @@ fn staggered_neighboring_positions_respects_offset() {
     let map: TilemapSize = TilemapSize { x: 3, y: 3 };
     let start: TilePos = TilePos::new(1, 1);
 
-    let neighbors: Neighbors<TilePos> = Neighbors::get_staggered_neighboring_positions(
-        &start,
-        &map,
-        false
-    );
+    let neighbors: Neighbors<TilePos> =
+        Neighbors::get_staggered_neighboring_positions(&start, &map, false);
 
     // only cardinals requested
     assert!(neighbors.north_east.is_none());
     assert!(neighbors.south_west.is_none());
     assert_eq!(
         neighbors.north,
-        Some(StaggeredPos::from(&start).offset(&SquareDirection::North).as_tile_pos(&map).unwrap())
+        Some(
+            StaggeredPos::from(&start)
+                .offset(&SquareDirection::North)
+                .as_tile_pos(&map)
+                .unwrap()
+        )
     );
     assert_eq!(
         neighbors.east,
-        Some(StaggeredPos::from(&start).offset(&SquareDirection::East).as_tile_pos(&map).unwrap())
+        Some(
+            StaggeredPos::from(&start)
+                .offset(&SquareDirection::East)
+                .as_tile_pos(&map)
+                .unwrap()
+        )
     );
 }
 

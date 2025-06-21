@@ -1,8 +1,11 @@
-use bevy::ecs::{ system::Commands, world::{ CommandQueue, World } };
+use bevy::ecs::{
+    system::Commands,
+    world::{CommandQueue, World},
+};
 use bevy_ecs_tilemap::{
-    map::{ TilemapId, TilemapSize },
+    map::{TilemapId, TilemapSize},
     prelude::fill_tilemap,
-    tiles::{ TilePos, TileStorage, TileTextureIndex },
+    tiles::{TilePos, TileStorage, TileTextureIndex},
 };
 
 fn spawn_tilemap(world: &mut World) -> (TilemapId, TileStorage) {
@@ -20,7 +23,13 @@ fn fill_tilemap_fills_every_cell() {
 
     let size = storage.size;
 
-    fill_tilemap(TileTextureIndex(7), size, tilemap_id, &mut commands, &mut storage);
+    fill_tilemap(
+        TileTextureIndex(7),
+        size,
+        tilemap_id,
+        &mut commands,
+        &mut storage,
+    );
     queue.apply(&mut world);
 
     // every position should have an entity and the world should own it

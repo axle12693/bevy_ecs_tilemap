@@ -1,5 +1,5 @@
 use bevy::color::Color;
-use bevy_ecs_tilemap::tiles::{ TileBundle, TileFlip, TilePos };
+use bevy_ecs_tilemap::tiles::{TileBundle, TileFlip, TilePos};
 
 #[test]
 fn tile_bundle_defaults_are_consistent() {

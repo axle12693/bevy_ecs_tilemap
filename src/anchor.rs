@@ -1,4 +1,4 @@
-use crate::{ TilemapGridSize, TilemapSize, TilemapTileSize, TilemapType, prelude::chunk_aabb };
+use crate::{TilemapGridSize, TilemapSize, TilemapTileSize, TilemapType, prelude::chunk_aabb};
 use bevy::prelude::*;
 
 /// How a tilemap is positioned relative to its [`Transform`]. It defaults to
@@ -45,13 +45,13 @@ impl TilemapAnchor {
         map_size: &TilemapSize,
         grid_size: &TilemapGridSize,
         tile_size: &TilemapTileSize,
-        map_type: &TilemapType
+        map_type: &TilemapType,
     ) -> Vec2 {
         let aabb = chunk_aabb(
             UVec2::new(map_size.x - 1, map_size.y - 1),
             grid_size,
             tile_size,
-            map_type
+            map_type,
         );
         let min = aabb.min();
         let max = aabb.max();
@@ -66,11 +66,10 @@ impl TilemapAnchor {
             TilemapAnchor::BottomRight => Vec2::new(-max.x, -min.y),
             TilemapAnchor::BottomCenter => Vec2::new(-(max.x + min.x) / 2.0, -min.y),
             TilemapAnchor::Center => Vec2::new(-(max.x + min.x) / 2.0, -(max.y + min.y) / 2.0),
-            TilemapAnchor::Custom(v) =>
-                Vec2::new(
-                    (-0.5 - v.x) * (max.x - min.x) - min.x,
-                    (-0.5 - v.y) * (max.y - min.y) - min.y
-                ),
+            TilemapAnchor::Custom(v) => Vec2::new(
+                (-0.5 - v.x) * (max.x - min.x) - min.x,
+                (-0.5 - v.y) * (max.y - min.y) - min.y,
+            ),
         }
     }
 }
@@ -91,7 +90,10 @@ mod tests {
     #[test]
     fn none_anchor_is_zero() {
         let (map, grid, tile, ty) = fixed_params();
-        assert_eq!(TilemapAnchor::None.as_offset(&map, &grid, &tile, &ty), Vec2::ZERO);
+        assert_eq!(
+            TilemapAnchor::None.as_offset(&map, &grid, &tile, &ty),
+            Vec2::ZERO
+        );
     }
 
     #[test]

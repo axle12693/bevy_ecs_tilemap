@@ -200,9 +200,7 @@ mod tests {
             e(entity.index() + 1)
         }
 
-        fn set_mapped(&mut self, _source: Entity, _target: Entity) {
-            
-        }
+        fn set_mapped(&mut self, _source: Entity, _target: Entity) {}
     }
 
     #[test]

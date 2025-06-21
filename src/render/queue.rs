@@ -1,10 +1,16 @@
 use bevy::{
     platform::collections::HashMap,
     prelude::*,
-    render::{ render_resource::{ BindGroup, BindGroupEntry }, renderer::RenderDevice },
+    render::{
+        render_resource::{BindGroup, BindGroupEntry},
+        renderer::RenderDevice,
+    },
 };
 
-use super::{ pipeline::TilemapPipeline, prepare::{ MeshUniformResource, TilemapUniformResource } };
+use super::{
+    pipeline::TilemapPipeline,
+    prepare::{MeshUniformResource, TilemapUniformResource},
+};
 use crate::TilemapTexture;
 
 #[derive(Resource)]
@@ -17,13 +23,10 @@ pub fn queue_transform_bind_group(
     tilemap_pipeline: Res<TilemapPipeline>,
     render_device: Res<RenderDevice>,
     transform_uniforms: Res<MeshUniformResource>,
-    tilemap_uniforms: Res<TilemapUniformResource>
+    tilemap_uniforms: Res<TilemapUniformResource>,
 ) {
-    if
-        let (Some(binding1), Some(binding2)) = (
-            transform_uniforms.0.binding(),
-            tilemap_uniforms.0.binding(),
-        )
+    if let (Some(binding1), Some(binding2)) =
+        (transform_uniforms.0.binding(), tilemap_uniforms.0.binding())
     {
         commands.insert_resource(TransformBindGroup {
             value: render_device.create_bind_group(
@@ -38,7 +41,7 @@ pub fn queue_transform_bind_group(
                         binding: 1,
                         resource: binding2,
                     },
-                ]
+                ],
             ),
         });
     }

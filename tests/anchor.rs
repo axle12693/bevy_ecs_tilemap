@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_ecs_tilemap::{ anchor::*, map::* };
+use bevy_ecs_tilemap::{anchor::*, map::*};
 use proptest::prelude::*;
 
 proptest! {
@@ -8,7 +8,7 @@ proptest! {
         map_x  in 1u32..20,
         map_y  in 1u32..20,
         grid_x in 0.5f32..4.0,
-        grid_y in 0.5f32..4.0,  
+        grid_y in 0.5f32..4.0,
         tile_x in 0.5f32..4.0,
         tile_y in 0.5f32..4.0,
     ) {
@@ -16,7 +16,7 @@ proptest! {
         let grid_size = TilemapGridSize { x: grid_x, y: grid_y };
         let tile_size = TilemapTileSize { x: tile_x, y: tile_y };
         let map_type  = TilemapType::Square;
-        
+
         // Had to do some trickery because proptest and approx weren't playing nice.
         // Accurate to 3 digits, change as needed.
         let precision = 10f32.powf(3f32);

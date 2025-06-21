@@ -1,4 +1,4 @@
-use bevy::ecs::entity::{ EntityMapper, MapEntities };
+use bevy::ecs::entity::{EntityMapper, MapEntities};
 use bevy::prelude::Entity;
 use bevy_ecs_tilemap::map::TilemapId;
 

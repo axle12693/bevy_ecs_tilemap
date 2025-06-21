@@ -1,8 +1,8 @@
 mod storage;
 
 use bevy::{
-    math::{ UVec2, Vec2 },
-    prelude::{ Bundle, Color, Component, Reflect, ReflectComponent },
+    math::{UVec2, Vec2},
+    prelude::{Bundle, Color, Component, Reflect, ReflectComponent},
     render::sync_world::SyncToRenderWorld,
 };
 pub use storage::*;
@@ -145,7 +145,7 @@ pub struct AnimatedTile {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use bevy::math::{ UVec2, Vec2 };
+    use bevy::math::{UVec2, Vec2};
 
     #[test]
     fn tile_pos_to_index() {

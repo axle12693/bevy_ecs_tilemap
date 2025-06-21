@@ -1,5 +1,5 @@
+use bevy_ecs_tilemap::helpers::square_grid::diamond::DiamondPos;
 use bevy_ecs_tilemap::helpers::square_grid::neighbors::SquareDirection;
-use bevy_ecs_tilemap::helpers::square_grid::diamond::{ DiamondPos };
 use bevy_ecs_tilemap::map::TilemapSize;
 use bevy_ecs_tilemap::tiles::TilePos;
 

@@ -18,21 +18,8 @@
 use bevy::{
     ecs::schedule::IntoScheduleConfigs,
     prelude::{
-        Bundle,
-        Changed,
-        Component,
-        Deref,
-        First,
-        GlobalTransform,
-        InheritedVisibility,
-        Plugin,
-        Query,
-        Reflect,
-        ReflectComponent,
-        SystemSet,
-        Transform,
-        ViewVisibility,
-        Visibility,
+        Bundle, Changed, Component, Deref, First, GlobalTransform, InheritedVisibility, Plugin,
+        Query, Reflect, ReflectComponent, SystemSet, Transform, ViewVisibility, Visibility,
     },
     render::sync_world::SyncToRenderWorld,
     time::TimeSystem,
@@ -43,30 +30,19 @@ use render::material::MaterialTilemapHandle;
 
 use anchor::TilemapAnchor;
 use map::{
-    TilemapGridSize,
-    TilemapSize,
-    TilemapSpacing,
-    TilemapTexture,
-    TilemapTextureSize,
-    TilemapTileSize,
-    TilemapType,
+    TilemapGridSize, TilemapSize, TilemapSpacing, TilemapTexture, TilemapTextureSize,
+    TilemapTileSize, TilemapType,
 };
-use prelude::{ TilemapId, TilemapRenderSettings };
+use prelude::{TilemapId, TilemapRenderSettings};
 #[cfg(feature = "render")]
-use render::material::{ MaterialTilemap, StandardTilemapMaterial };
+use render::material::{MaterialTilemap, StandardTilemapMaterial};
 use tiles::{
-    AnimatedTile,
-    TileColor,
-    TileFlip,
-    TilePos,
-    TilePosOld,
-    TileStorage,
-    TileTextureIndex,
+    AnimatedTile, TileColor, TileFlip, TilePos, TilePosOld, TileStorage, TileTextureIndex,
     TileVisible,
 };
 
 #[cfg(all(not(feature = "atlas"), feature = "render"))]
-use bevy::render::{ ExtractSchedule, RenderApp };
+use bevy::render::{ExtractSchedule, RenderApp};
 
 pub mod anchor;
 /// A module that allows pre-loading of atlases into array textures.

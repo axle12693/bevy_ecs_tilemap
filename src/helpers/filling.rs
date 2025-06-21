@@ -1,11 +1,11 @@
 use crate::helpers::hex_grid::axial::AxialPos;
-use crate::helpers::hex_grid::neighbors::{ HEX_DIRECTIONS, HexDirection };
+use crate::helpers::hex_grid::neighbors::{HEX_DIRECTIONS, HexDirection};
 use crate::map::TilemapId;
 use crate::prelude::HexCoordSystem;
-use crate::tiles::{ TileBundle, TileColor, TilePos, TileTextureIndex };
-use crate::{ TileStorage, TilemapSize };
+use crate::tiles::{TileBundle, TileColor, TilePos, TileTextureIndex};
+use crate::{TileStorage, TilemapSize};
 
-use bevy::prelude::{ Color, Commands };
+use bevy::prelude::{Color, Commands};
 
 /// Fills an entire tile storage with the given tile.
 pub fn fill_tilemap(
@@ -13,7 +13,7 @@ pub fn fill_tilemap(
     size: TilemapSize,
     tilemap_id: TilemapId,
     commands: &mut Commands,
-    tile_storage: &mut TileStorage
+    tile_storage: &mut TileStorage,
 ) {
     commands.entity(tilemap_id.0).with_children(|parent| {
         for x in 0..size.x {
@@ -43,7 +43,7 @@ pub fn fill_tilemap_rect(
     size: TilemapSize,
     tilemap_id: TilemapId,
     commands: &mut Commands,
-    tile_storage: &mut TileStorage
+    tile_storage: &mut TileStorage,
 ) {
     commands.entity(tilemap_id.0).with_children(|parent| {
         for x in 0..size.x {
@@ -78,7 +78,7 @@ pub fn fill_tilemap_rect_color(
     color: Color,
     tilemap_id: TilemapId,
     commands: &mut Commands,
-    tile_storage: &mut TileStorage
+    tile_storage: &mut TileStorage,
 ) {
     commands.entity(tilemap_id.0).with_children(|parent| {
         for x in 0..size.x {
@@ -112,7 +112,8 @@ pub fn generate_hex_ring(origin: AxialPos, radius: u32) -> Vec<AxialPos> {
         vec![origin]
     } else {
         let mut ring = Vec::with_capacity((radius * 6) as usize);
-        let corners = HEX_DIRECTIONS.iter()
+        let corners = HEX_DIRECTIONS
+            .iter()
             .map(|direction| origin + radius * AxialPos::from(direction))
             .collect::<Vec<AxialPos>>();
         // The "tangent" is the direction we must travel in to reach the next corner
@@ -153,15 +154,15 @@ pub fn fill_tilemap_hexagon(
     hex_coord_system: HexCoordSystem,
     tilemap_id: TilemapId,
     commands: &mut Commands,
-    tile_storage: &mut TileStorage
+    tile_storage: &mut TileStorage,
 ) {
     let tile_positions = generate_hexagon(
         AxialPos::from_tile_pos_given_coord_system(&origin, hex_coord_system),
-        radius
+        radius,
     )
-        .into_iter()
-        .map(|axial_pos| axial_pos.as_tile_pos_given_coord_system(hex_coord_system))
-        .collect::<Vec<TilePos>>();
+    .into_iter()
+    .map(|axial_pos| axial_pos.as_tile_pos_given_coord_system(hex_coord_system))
+    .collect::<Vec<TilePos>>();
 
     commands.entity(tilemap_id.0).with_children(|parent| {
         for tile_pos in tile_positions {

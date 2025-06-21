@@ -1,10 +1,10 @@
 use crate::helpers::square_grid::SquarePos;
 use crate::helpers::square_grid::diamond::DiamondPos;
-use crate::helpers::square_grid::neighbors::{ SQUARE_OFFSETS, SquareDirection };
+use crate::helpers::square_grid::neighbors::{SQUARE_OFFSETS, SquareDirection};
 use crate::tiles::TilePos;
-use crate::{ TilemapGridSize, TilemapSize };
+use crate::{TilemapGridSize, TilemapSize};
 use bevy::math::Vec2;
-use std::ops::{ Add, Mul, Sub };
+use std::ops::{Add, Mul, Sub};
 
 /// Position for tiles arranged in [`Staggered`](crate::map::IsoCoordSystem::Diamond) isometric
 /// coordinate system.
@@ -105,7 +105,7 @@ impl StaggeredPos {
     #[inline]
     pub fn corner_offset_in_world(
         corner_direction: SquareDirection,
-        grid_size: &TilemapGridSize
+        grid_size: &TilemapGridSize,
     ) -> Vec2 {
         DiamondPos::corner_offset_in_world(corner_direction, grid_size)
     }
@@ -116,7 +116,7 @@ impl StaggeredPos {
     pub fn corner_in_world(
         &self,
         corner_direction: SquareDirection,
-        grid_size: &TilemapGridSize
+        grid_size: &TilemapGridSize,
     ) -> Vec2 {
         let diamond_pos = DiamondPos::from(self);
 
@@ -157,17 +157,19 @@ impl TilePos {
     pub fn staggered_offset(
         &self,
         direction: &SquareDirection,
-        map_size: &TilemapSize
+        map_size: &TilemapSize,
     ) -> Option<TilePos> {
-        StaggeredPos::from(self).offset(direction).as_tile_pos(map_size)
+        StaggeredPos::from(self)
+            .offset(direction)
+            .as_tile_pos(map_size)
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::helpers::square_grid::diamond::DiamondPos;
     use crate::helpers::square_grid::SquarePos;
+    use crate::helpers::square_grid::diamond::DiamondPos;
     use crate::helpers::square_grid::neighbors::SquareDirection::*;
 
     #[test]

@@ -1,20 +1,17 @@
 use bevy::{
     asset::Assets,
-    ecs::{ entity::{ EntityMapper, MapEntities }, reflect::ReflectMapEntities },
-    math::{ UVec2, Vec2 },
-    prelude::{
-        Component,
-        Deref,
-        DerefMut,
-        Entity,
-        Handle,
-        Image,
-        Reflect,
-        ReflectComponent,
-        Res,
-        ResMut,
+    ecs::{
+        entity::{EntityMapper, MapEntities},
+        reflect::ReflectMapEntities,
     },
-    render::{ render_resource::TextureUsages, view::{ VisibilityClass, add_visibility_class } },
+    math::{UVec2, Vec2},
+    prelude::{
+        Component, Deref, DerefMut, Entity, Handle, Image, Reflect, ReflectComponent, Res, ResMut,
+    },
+    render::{
+        render_resource::TextureUsages,
+        view::{VisibilityClass, add_visibility_class},
+    },
 };
 use std::ops::Add;
 
@@ -181,15 +178,16 @@ impl TilemapTexture {
         }
 
         #[cfg(not(feature = "atlas"))]
-        self.image_handles()
-            .into_iter()
-            .all(|h| {
-                if let Some(image) = images.get(h) {
-                    image.texture_descriptor.usage.contains(TextureUsages::COPY_SRC)
-                } else {
-                    false
-                }
-            })
+        self.image_handles().into_iter().all(|h| {
+            if let Some(image) = images.get(h) {
+                image
+                    .texture_descriptor
+                    .usage
+                    .contains(TextureUsages::COPY_SRC)
+            } else {
+                false
+            }
+        })
     }
 
     /// Sets images with the `COPY_SRC` flag.
@@ -198,12 +196,15 @@ impl TilemapTexture {
             // NOTE: We retrieve it non-mutably first to avoid triggering an `AssetEvent::Modified`
             // if we didn't actually need to modify it
             if let Some(image) = images.get(handle) {
-                if !image.texture_descriptor.usage.contains(TextureUsages::COPY_SRC) {
+                if !image
+                    .texture_descriptor
+                    .usage
+                    .contains(TextureUsages::COPY_SRC)
+                {
                     if let Some(image) = images.get_mut(handle) {
-                        image.texture_descriptor.usage =
-                            TextureUsages::TEXTURE_BINDING |
-                            TextureUsages::COPY_SRC |
-                            TextureUsages::COPY_DST;
+                        image.texture_descriptor.usage = TextureUsages::TEXTURE_BINDING
+                            | TextureUsages::COPY_SRC
+                            | TextureUsages::COPY_DST;
                     };
                 }
             }
@@ -215,12 +216,7 @@ impl TilemapTexture {
             TilemapTexture::Single(handle) => TilemapTexture::Single(handle.clone_weak()),
             #[cfg(not(feature = "atlas"))]
             TilemapTexture::Vector(handles) => {
-                TilemapTexture::Vector(
-                    handles
-                        .iter()
-                        .map(|h| h.clone_weak())
-                        .collect()
-                )
+                TilemapTexture::Vector(handles.iter().map(|h| h.clone_weak()).collect())
             }
             #[cfg(not(feature = "atlas"))]
             TilemapTexture::TextureContainer(handle) => {
