@@ -22,7 +22,7 @@ use bevy::{
         Query, Reflect, ReflectComponent, SystemSet, Transform, ViewVisibility, Visibility,
     },
     render::sync_world::SyncToRenderWorld,
-    time::TimeSystem,
+    time::TimeSystems,
 };
 
 #[cfg(feature = "render")]
@@ -93,7 +93,7 @@ impl Plugin for TilemapPlugin {
             .register_type::<TileStorage>()
             .register_type::<TilePosOld>()
             .register_type::<AnimatedTile>()
-            .configure_sets(First, TilemapFirstSet.after(TimeSystem));
+            .configure_sets(First, TilemapFirstSet.after(TimeSystems));
     }
 }
 
@@ -168,11 +168,6 @@ pub struct StandardTilemapBundle {
 
 /// A module which exports commonly used dependencies.
 pub mod prelude {
-    #[cfg(feature = "render")]
-    pub use crate::MaterialTilemapBundle;
-    #[cfg(feature = "render")]
-    pub use crate::TilemapBundle;
-    pub use crate::TilemapPlugin;
     pub use crate::anchor::TilemapAnchor;
     #[cfg(all(not(feature = "atlas"), feature = "render"))]
     pub use crate::array_texture_preload::*;
@@ -192,6 +187,11 @@ pub mod prelude {
     #[cfg(feature = "render")]
     pub use crate::render::material::StandardTilemapMaterial;
     pub use crate::tiles::*;
+    #[cfg(feature = "render")]
+    pub use crate::MaterialTilemapBundle;
+    #[cfg(feature = "render")]
+    pub use crate::TilemapBundle;
+    pub use crate::TilemapPlugin;
 }
 
 /// Updates old tile positions with the new values from the last frame.

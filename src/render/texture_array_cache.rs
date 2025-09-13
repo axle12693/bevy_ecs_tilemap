@@ -147,7 +147,7 @@ impl TextureArrayCache {
             // Fixes issue where default handle causes a crash. There should be a better
             // way of fixing this.
             if let TilemapTexture::Single(t) = texture {
-                if bevy::prelude::Handle::default() == t.clone_weak() {
+                if bevy::prelude::Handle::default() == t.clone() {
                     return;
                 }
             }
