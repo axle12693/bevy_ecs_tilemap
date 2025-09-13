@@ -1,7 +1,7 @@
 use crate::render::{DefaultSampler, TextureArrayCache};
 use crate::{
-    TilemapTexture,
     prelude::{TilemapSpacing, TilemapTileSize},
+    TilemapTexture,
 };
 use bevy::render::render_resource::{FilterMode, TextureFormat};
 use bevy::{

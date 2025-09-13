@@ -3,8 +3,8 @@ use std::marker::PhantomData;
 use bevy::{
     core_pipeline::core_2d::Transparent2d,
     ecs::system::{
-        SystemParamItem,
         lifetimeless::{Read, SQuery, SRes},
+        SystemParamItem,
     },
     math::UVec4,
     render::{
@@ -15,15 +15,15 @@ use bevy::{
     },
 };
 
-use crate::TilemapTexture;
 use crate::map::TilemapId;
+use crate::TilemapTexture;
 
 use super::{
-    DynamicUniformIndex,
     chunk::{ChunkId, RenderChunk2dStorage, TilemapUniformData},
     material::{MaterialTilemap, MaterialTilemapHandle, RenderMaterialsTilemap},
     prepare::MeshUniform,
     queue::{ImageBindGroups, TilemapViewBindGroup, TransformBindGroup},
+    DynamicUniformIndex,
 };
 
 pub struct SetMeshViewBindGroup<const I: usize>;
