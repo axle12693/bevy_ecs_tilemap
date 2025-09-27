@@ -13,14 +13,14 @@ use bevy::{
         render_phase::AddRenderCommand,
         render_resource::{FilterMode, SpecializedRenderPipelines, VertexFormat},
         sync_world::RenderEntity,
-        Render, RenderApp,
+        Render, RenderApp, RenderSystems,
     },
 };
 
 #[cfg(not(feature = "atlas"))]
-use bevy::render::texture::GpuImage;
+use bevy::render::renderer::RenderDevice;
 #[cfg(not(feature = "atlas"))]
-use bevy::render::{renderer::RenderDevice, RenderSystems};
+use bevy::render::texture::GpuImage;
 use extract::remove_changed;
 
 use crate::{
@@ -127,7 +127,8 @@ impl Plugin for TilemapRenderingPlugin {
             .insert(
                 Handle::<StandardTilemapMaterial>::default().id(),
                 StandardTilemapMaterial::default(),
-            );
+            )
+            .unwrap();
 
         app.init_resource::<ModifiedImageIds>()
             .add_systems(Update, collect_modified_image_asset_messages);

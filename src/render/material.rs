@@ -391,10 +391,11 @@ fn prepare_material_tilemap<M: MaterialTilemap>(
 ) -> Result<PreparedMaterialTilemap<M>, AsBindGroupError> {
     let prepared =
         material.as_bind_group(&pipeline.material_tilemap_layout, render_device, param)?;
+    let bind_group_data = material.bind_group_data();
     Ok(PreparedMaterialTilemap {
         bindings: prepared.bindings.0,
         bind_group: prepared.bind_group,
-        key: prepared.data,
+        key: bind_group_data,
     })
 }
 
