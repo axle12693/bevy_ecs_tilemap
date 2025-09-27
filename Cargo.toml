@@ -16,12 +16,11 @@ render = []
 serde = ["dep:serde", "bevy/serialize"]
 
 [dependencies]
-bevy = { version = "0.17.0-rc.1", default-features = false, features = [
+bevy = { version = "0.17.0-rc.2", default-features = false, features = [
     "bevy_core_pipeline",
     "bevy_render",
     "bevy_asset",
     "bevy_sprite",
-    "bevy_sprite_render",
     "bevy_log",
 ] }
 log = "0.4"
@@ -35,7 +34,7 @@ tiled = { version = "0.14.0", default-features = false }
 thiserror = { version = "2.0" }
 
 [dev-dependencies.bevy]
-version = "0.17.0-rc.1"
+version = "0.17.0-rc.2"
 default-features = false
 features = [
     "bevy_core_pipeline",
