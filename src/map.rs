@@ -198,11 +198,12 @@ impl TilemapTexture {
                     .texture_descriptor
                     .usage
                     .contains(TextureUsages::COPY_SRC)
-                    && let Some(image) = images.get_mut(handle) {
-                        image.texture_descriptor.usage = TextureUsages::TEXTURE_BINDING
-                            | TextureUsages::COPY_SRC
-                            | TextureUsages::COPY_DST;
-                    };
+                && let Some(image) = images.get_mut(handle)
+            {
+                image.texture_descriptor.usage = TextureUsages::TEXTURE_BINDING
+                    | TextureUsages::COPY_SRC
+                    | TextureUsages::COPY_DST;
+            };
         }
     }
 
@@ -210,9 +211,7 @@ impl TilemapTexture {
         match self {
             TilemapTexture::Single(handle) => TilemapTexture::Single(handle.clone()),
             #[cfg(not(feature = "atlas"))]
-            TilemapTexture::Vector(handles) => {
-                TilemapTexture::Vector(handles.iter().cloned().collect())
-            }
+            TilemapTexture::Vector(handles) => TilemapTexture::Vector(handles.to_vec()),
             #[cfg(not(feature = "atlas"))]
             TilemapTexture::TextureContainer(handle) => {
                 TilemapTexture::TextureContainer(handle.clone())
