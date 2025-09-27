@@ -200,8 +200,8 @@ impl RenderCommand<Transparent2d> for DrawMesh {
             chunk_id.0.y,
             chunk_id.0.z,
             tilemap_id.0.index(),
-        )) {
-            if let (Some(render_mesh), Some(vertex_buffer), Some(index_buffer)) = (
+        ))
+            && let (Some(render_mesh), Some(vertex_buffer), Some(index_buffer)) = (
                 &chunk.render_mesh,
                 &chunk.vertex_buffer,
                 &chunk.index_buffer,
@@ -224,7 +224,6 @@ impl RenderCommand<Transparent2d> for DrawMesh {
                     }
                 }
             }
-        }
 
         RenderCommandResult::Success
     }

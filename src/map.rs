@@ -193,19 +193,16 @@ impl TilemapTexture {
         for handle in self.image_handles() {
             // NOTE: We retrieve it non-mutably first to avoid triggering an `AssetEvent::Modified`
             // if we didn't actually need to modify it
-            if let Some(image) = images.get(handle) {
-                if !image
+            if let Some(image) = images.get(handle)
+                && !image
                     .texture_descriptor
                     .usage
                     .contains(TextureUsages::COPY_SRC)
-                {
-                    if let Some(image) = images.get_mut(handle) {
+                    && let Some(image) = images.get_mut(handle) {
                         image.texture_descriptor.usage = TextureUsages::TEXTURE_BINDING
                             | TextureUsages::COPY_SRC
                             | TextureUsages::COPY_DST;
                     };
-                }
-            }
         }
     }
 
@@ -214,7 +211,7 @@ impl TilemapTexture {
             TilemapTexture::Single(handle) => TilemapTexture::Single(handle.clone()),
             #[cfg(not(feature = "atlas"))]
             TilemapTexture::Vector(handles) => {
-                TilemapTexture::Vector(handles.iter().map(|h| h.clone()).collect())
+                TilemapTexture::Vector(handles.iter().cloned().collect())
             }
             #[cfg(not(feature = "atlas"))]
             TilemapTexture::TextureContainer(handle) => {
