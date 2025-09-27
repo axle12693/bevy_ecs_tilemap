@@ -247,7 +247,7 @@ impl Default for CursorPos {
 // We need to keep the cursor position updated based on any `CursorMoved` events.
 pub fn update_cursor_pos(
     camera_q: Query<(&GlobalTransform, &Camera)>,
-    mut cursor_moved_events: EventReader<CursorMoved>,
+    mut cursor_moved_events: MessageReader<CursorMoved>,
     mut cursor_pos: ResMut<CursorPos>,
 ) {
     for cursor_moved in cursor_moved_events.read() {

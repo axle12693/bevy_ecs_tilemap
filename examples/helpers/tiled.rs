@@ -16,18 +16,15 @@ use std::io::{Cursor, ErrorKind};
 use std::path::Path;
 use std::sync::Arc;
 
+use bevy::log::{info, warn};
 use bevy::{
     asset::{io::Reader, AssetLoader, AssetPath},
     platform::collections::HashMap,
     prelude::{
         Added, Asset, AssetApp, AssetEvent, AssetId, Assets, Bundle, Commands, Component, Entity,
-        EventReader, GlobalTransform, Handle, Image, Plugin, Query, Res, Transform, Update,
+        GlobalTransform, Handle, Image, MessageReader, Plugin, Query, Res, Transform, Update,
     },
     reflect::TypePath,
-};
-use bevy::{
-    ecs::message::MessageReader,
-    log::{info, warn},
 };
 use bevy_ecs_tilemap::prelude::*;
 use thiserror::Error;
@@ -202,7 +199,7 @@ impl AssetLoader for TiledLoader {
     }
 }
 
-pub fn process_loaded_maps(
+fn process_loaded_maps(
     mut commands: Commands,
     mut map_events: MessageReader<AssetEvent<TiledMap>>,
     maps: Res<Assets<TiledMap>>,

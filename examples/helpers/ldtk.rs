@@ -106,7 +106,7 @@ impl AssetLoader for LdtkLoader {
     }
 }
 
-pub fn process_loaded_tile_maps(
+fn process_loaded_tile_maps(
     mut commands: Commands,
     mut map_events: MessageReader<AssetEvent<LdtkMap>>,
     maps: Res<Assets<LdtkMap>>,

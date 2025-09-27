@@ -14,8 +14,8 @@ use bevy_ecs_tilemap::prelude::*;
 mod helpers;
 use helpers::anchor::rotate_right;
 use helpers::camera::movement as camera_movement;
-use rand::seq::SliceRandom;
-use rand::thread_rng;
+use rand::rng;
+use rand::seq::IndexedRandom;
 
 const MAP_SIDE_LENGTH_X: u32 = 4;
 const MAP_SIDE_LENGTH_Y: u32 = 4;
@@ -112,7 +112,7 @@ fn spawn_tilemap(mut commands: Commands, tile_handle_square: Res<TileHandleSquar
         &mut tile_storage,
     );
 
-    let mut rng = thread_rng();
+    let mut rng = rng();
     let colors: Vec<Color> = vec![
         color("FFBE0B"),
         color("FB5607"),
