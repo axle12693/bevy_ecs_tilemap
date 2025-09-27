@@ -388,7 +388,7 @@ fn spawn_tile_labels(
                         ..default()
                     },
                     TextColor(Color::BLACK),
-                    TextLayout::new_with_justify(JustifyText::Center),
+                    TextLayout::new_with_justify(Justify::Center),
                     transform,
                 ))
                 .id();
@@ -463,7 +463,7 @@ fn hover_highlight_tile_label(
         let cursor_pos = cursor_pos.0;
         let cursor_pos_in_map_pos = {
             let cursor_pos = Vec4::from((cursor_pos, 0.0, 1.0));
-            let cursor_in_map_pos = map_transform.compute_matrix().inverse() * cursor_pos;
+            let cursor_in_map_pos = map_transform.to_matrix().inverse() * cursor_pos;
             cursor_in_map_pos.xy()
         };
         if let Some(tile_pos) = TilePos::from_world_pos(

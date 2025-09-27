@@ -8,8 +8,8 @@
 //! Press ENTER to change map type.
 //! Press TAB to change the grid size.
 
-use bevy::prelude::*;
 use bevy::{image::Image, sprite::Anchor};
+use bevy::{prelude::*, window::WindowResolution};
 use bevy_ecs_tilemap::prelude::*;
 mod helpers;
 use helpers::anchor::rotate_right;
@@ -177,7 +177,7 @@ fn spawn_tile_labels(
                         ..default()
                     },
                     TextColor(Color::BLACK),
-                    TextLayout::new_with_justify(JustifyText::Center),
+                    TextLayout::new_with_justify(Justify::Center),
                     transform,
                 ))
                 .id();
@@ -213,8 +213,8 @@ fn spawn_map_label(
                         font_size,
                         ..default()
                     },
-                    TextLayout::new_with_justify(JustifyText::Left),
-                    Anchor::TopLeft,
+                    TextLayout::new_with_justify(Justify::Left),
+                    Anchor::TOP_LEFT,
                     transform,
                     MapLabel,
                 ))
@@ -398,7 +398,7 @@ fn main() {
                 .set(WindowPlugin {
                     primary_window: Some(Window {
                         title: String::from("Anchor - Press SPACE to change anchor"),
-                        resolution: Vec2::splat(450.0).into(),
+                        resolution: WindowResolution::new(450, 450),
                         ..Default::default()
                     }),
                     ..default()
