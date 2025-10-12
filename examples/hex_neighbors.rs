@@ -281,12 +281,11 @@ fn hover_highlight_tile_label(
 ) {
     // Un-highlight any previously highlighted tile labels.
     for highlighted_tile_entity in highlighted_tiles_q.iter() {
-        if let Ok(label) = tile_label_q.get(highlighted_tile_entity) {
-            if let Ok(mut text_color) = text_q.get_mut(label.0) {
+        if let Ok(label) = tile_label_q.get(highlighted_tile_entity)
+            && let Ok(mut text_color) = text_q.get_mut(label.0) {
                 text_color.0 = Color::BLACK;
                 commands.entity(highlighted_tile_entity).remove::<Hovered>();
             }
-        }
     }
 
     for (map_size, grid_size, tile_size, map_type, tile_storage, map_transform, anchor) in
@@ -312,14 +311,12 @@ fn hover_highlight_tile_label(
             anchor,
         ) {
             // Highlight the relevant tile's label
-            if let Some(tile_entity) = tile_storage.get(&tile_pos) {
-                if let Ok(label) = tile_label_q.get(tile_entity) {
-                    if let Ok(mut text_color) = text_q.get_mut(label.0) {
+            if let Some(tile_entity) = tile_storage.get(&tile_pos)
+                && let Ok(label) = tile_label_q.get(tile_entity)
+                    && let Ok(mut text_color) = text_q.get_mut(label.0) {
                         text_color.0 = palettes::tailwind::RED_600.into();
                         commands.entity(tile_entity).insert(Hovered);
                     }
-                }
-            }
         }
     }
 }
@@ -340,14 +337,13 @@ fn highlight_neighbor_label(
 ) {
     // Un-highlight any previously highlighted tile labels.
     for highlighted_tile_entity in highlighted_tiles_q.iter() {
-        if let Ok(label) = tile_label_q.get(highlighted_tile_entity) {
-            if let Ok(mut text_color) = text_q.get_mut(label.0) {
+        if let Ok(label) = tile_label_q.get(highlighted_tile_entity)
+            && let Ok(mut text_color) = text_q.get_mut(label.0) {
                 text_color.0 = Color::BLACK;
                 commands
                     .entity(highlighted_tile_entity)
                     .remove::<NeighborHighlight>();
             }
-        }
     }
 
     for (map_type, map_size, tile_storage) in tilemap_query.iter() {
@@ -364,14 +360,12 @@ fn highlight_neighbor_label(
             for neighbor_pos in neighboring_positions.iter() {
                 // We want to ensure that the tile position lies within the tile map, so we do a
                 // `checked_get`.
-                if let Some(tile_entity) = tile_storage.checked_get(neighbor_pos) {
-                    if let Ok(label) = tile_label_q.get(tile_entity) {
-                        if let Ok(mut text_color) = text_q.get_mut(label.0) {
+                if let Some(tile_entity) = tile_storage.checked_get(neighbor_pos)
+                    && let Ok(label) = tile_label_q.get(tile_entity)
+                        && let Ok(mut text_color) = text_q.get_mut(label.0) {
                             text_color.0 = palettes::tailwind::BLUE_600.into();
                             commands.entity(tile_entity).insert(NeighborHighlight);
                         }
-                    }
-                }
             }
 
             let selected_hex_direction = if keyboard_input.pressed(KeyCode::Digit0) {
@@ -403,14 +397,12 @@ fn highlight_neighbor_label(
 
                 // We want to ensure that the tile position lies within the tile map, so we do a
                 // `checked_get`.
-                if let Some(tile_entity) = tile_storage.checked_get(&tile_pos) {
-                    if let Ok(label) = tile_label_q.get(tile_entity) {
-                        if let Ok(mut text_color) = text_q.get_mut(label.0) {
+                if let Some(tile_entity) = tile_storage.checked_get(&tile_pos)
+                    && let Ok(label) = tile_label_q.get(tile_entity)
+                        && let Ok(mut text_color) = text_q.get_mut(label.0) {
                             text_color.0 = palettes::tailwind::GREEN_600.into();
                             commands.entity(tile_entity).insert(NeighborHighlight);
                         }
-                    }
-                }
             }
         }
     }
