@@ -6,9 +6,9 @@ mod no_atlas {
     use bevy::prelude::*;
     use bevy_ecs_tilemap::helpers::hex_grid::axial::AxialPos;
     use bevy_ecs_tilemap::prelude::*;
-    use rand::rng;
     use rand::prelude::IndexedRandom;
-    
+    use rand::rng;
+
     const MAP_RADIUS: u32 = 10;
     const MAP_DIAMETER: u32 = 2 * MAP_RADIUS + 1;
     const MAP_CENTER: TilePos = TilePos {
