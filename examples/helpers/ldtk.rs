@@ -1,8 +1,8 @@
 use bevy_ecs_tilemap::{
-    TilemapBundle,
     anchor::TilemapAnchor,
     map::{TilemapId, TilemapSize, TilemapTexture, TilemapTileSize},
     tiles::{TileBundle, TilePos, TileStorage, TileTextureIndex},
+    TilemapBundle,
 };
 use std::collections::HashMap;
 use thiserror::Error;
@@ -14,6 +14,7 @@ use bevy::{
 };
 use bevy_ecs_tilemap::map::TilemapType;
 
+#[allow(dead_code)]
 #[derive(Default)]
 pub struct LdtkPlugin;
 
@@ -25,20 +26,24 @@ impl Plugin for LdtkPlugin {
     }
 }
 
+#[allow(dead_code)]
 #[derive(TypePath, Asset)]
 pub struct LdtkMap {
     pub project: ldtk_rust::Project,
     pub tilesets: HashMap<i64, Handle<Image>>,
 }
 
+#[allow(dead_code)]
 #[derive(Default, Component)]
 pub struct LdtkMapConfig {
     pub selected_level: usize,
 }
 
+#[allow(dead_code)]
 #[derive(Default, Component)]
 pub struct LdtkMapHandle(pub Handle<LdtkMap>);
 
+#[allow(dead_code)]
 #[derive(Default, Bundle)]
 pub struct LdtkMapBundle {
     pub ldtk_map: LdtkMapHandle,
@@ -49,6 +54,7 @@ pub struct LdtkMapBundle {
 
 pub struct LdtkLoader;
 
+#[allow(dead_code)]
 #[derive(Debug, Error)]
 pub enum LdtkAssetLoaderError {
     /// An [IO](std::io) Error
@@ -71,9 +77,7 @@ impl AssetLoader for LdtkLoader {
         reader.read_to_end(&mut bytes).await?;
 
         let project: ldtk_rust::Project = serde_json::from_slice(&bytes).map_err(|e| {
-            std::io::Error::other(
-                format!("Could not read contents of Ldtk map: {e}"),
-            )
+            std::io::Error::other(format!("Could not read contents of Ldtk map: {e}"))
         })?;
         let dependencies: Vec<(i64, AssetPath)> = project
             .defs

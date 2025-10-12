@@ -18,7 +18,7 @@ use std::sync::Arc;
 
 use bevy::log::{info, warn};
 use bevy::{
-    asset::{AssetLoader, AssetPath, io::Reader},
+    asset::{io::Reader, AssetLoader, AssetPath},
     platform::collections::HashMap,
     prelude::{
         Added, Asset, AssetApp, AssetEvent, AssetId, Assets, Bundle, Commands, Component, Entity,
@@ -29,6 +29,7 @@ use bevy::{
 use bevy_ecs_tilemap::prelude::*;
 use thiserror::Error;
 
+#[allow(dead_code)]
 #[derive(Default)]
 pub struct TiledMapPlugin;
 
@@ -40,6 +41,7 @@ impl Plugin for TiledMapPlugin {
     }
 }
 
+#[allow(dead_code)]
 #[derive(TypePath, Asset)]
 pub struct TiledMap {
     pub map: tiled::Map,
@@ -52,14 +54,17 @@ pub struct TiledMap {
 }
 
 // Stores a list of tiled layers.
+#[allow(dead_code)]
 #[derive(Component, Default)]
 pub struct TiledLayersStorage {
     pub storage: HashMap<u32, Entity>,
 }
 
+#[allow(dead_code)]
 #[derive(Component, Default)]
 pub struct TiledMapHandle(pub Handle<TiledMap>);
 
+#[allow(dead_code)]
 #[derive(Default, Bundle)]
 pub struct TiledMapBundle {
     pub tiled_map: TiledMapHandle,
@@ -69,10 +74,12 @@ pub struct TiledMapBundle {
     pub render_settings: TilemapRenderSettings,
 }
 
+#[allow(dead_code)]
 struct BytesResourceReader {
     bytes: Arc<[u8]>,
 }
 
+#[allow(dead_code)]
 impl BytesResourceReader {
     fn new(bytes: &[u8]) -> Self {
         Self {
@@ -91,8 +98,10 @@ impl tiled::ResourceReader for BytesResourceReader {
     }
 }
 
+#[allow(dead_code)]
 pub struct TiledLoader;
 
+#[allow(dead_code)]
 #[derive(Debug, Error)]
 pub enum TiledAssetLoaderError {
     /// An [IO](std::io) Error
@@ -118,9 +127,9 @@ impl AssetLoader for TiledLoader {
             tiled::DefaultResourceCache::new(),
             BytesResourceReader::new(&bytes),
         );
-        let map = loader.load_tmx_map(load_context.path()).map_err(|e| {
-            std::io::Error::other(format!("Could not load TMX map: {e}"))
-        })?;
+        let map = loader
+            .load_tmx_map(load_context.path())
+            .map_err(|e| std::io::Error::other(format!("Could not load TMX map: {e}")))?;
 
         let mut tilemap_textures = HashMap::default();
         #[cfg(not(feature = "atlas"))]
@@ -199,6 +208,7 @@ impl AssetLoader for TiledLoader {
     }
 }
 
+#[allow(dead_code)]
 fn process_loaded_maps(
     mut commands: Commands,
     mut map_events: MessageReader<AssetEvent<TiledMap>>,
