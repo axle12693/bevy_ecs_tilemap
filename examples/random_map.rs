@@ -3,7 +3,7 @@ use bevy::{
     prelude::*,
 };
 use bevy_ecs_tilemap::prelude::*;
-use rand::{rng, Rng};
+use rand::{Rng, rng};
 
 mod helpers;
 

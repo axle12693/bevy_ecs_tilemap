@@ -4,9 +4,9 @@ use bevy::{
     platform::collections::HashMap,
     prelude::*,
     render::{
+        Extract,
         render_resource::{FilterMode, TextureFormat},
         sync_world::RenderEntity,
-        Extract,
     },
 };
 
@@ -17,12 +17,12 @@ use crate::render::DefaultSampler;
 use crate::tiles::AnimatedTile;
 use crate::tiles::TilePosOld;
 use crate::{
+    FrustumCulling,
     map::{
         TilemapId, TilemapSize, TilemapSpacing, TilemapTexture, TilemapTextureSize,
         TilemapTileSize, TilemapType,
     },
     tiles::{TileColor, TileFlip, TilePos, TileTextureIndex, TileVisible},
-    FrustumCulling,
 };
 
 use super::chunk::PackedTileData;
