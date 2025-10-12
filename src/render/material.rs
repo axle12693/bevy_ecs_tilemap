@@ -628,11 +628,11 @@ pub fn bind_material_tilemap_meshes<M: MaterialTilemap>(
                     if modified_image_ids.is_texture_modified(&chunk.texture) {
                         image_bind_groups
                             .values
-                            .insert(chunk.texture.clone_weak(), create_bind_group());
+                            .insert(chunk.texture.clone(), create_bind_group());
                     } else {
                         image_bind_groups
                             .values
-                            .entry(chunk.texture.clone_weak())
+                            .entry(chunk.texture.clone())
                             .or_insert_with(create_bind_group);
                     }
                 }

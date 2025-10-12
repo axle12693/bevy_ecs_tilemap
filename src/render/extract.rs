@@ -295,7 +295,7 @@ pub fn extract(
                     spacing: *data.3,
                     grid_size: *data.4,
                     map_type: *data.5,
-                    texture: data.6.clone_weak(),
+                    texture: data.6.clone(),
                     map_size: *data.7,
                     visibility: *data.8,
                     frustum_culling: *data.9,
@@ -333,7 +333,7 @@ pub fn extract(
                         spacing: *data.3,
                         grid_size: *data.4,
                         map_type: *data.5,
-                        texture: data.6.clone_weak(),
+                        texture: data.6.clone(),
                         map_size: *data.7,
                         visibility: *data.8,
                         frustum_culling: *data.9,
@@ -358,7 +358,7 @@ pub fn extract(
                 ExtractedTilemapTextureBundle {
                     data: ExtractedTilemapTexture::new(
                         render_entity.id(),
-                        texture.clone_weak(),
+                        texture.clone(),
                         *tile_size,
                         *tile_spacing,
                         default_image_settings.0.min_filter.into(),

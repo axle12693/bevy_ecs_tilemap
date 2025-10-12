@@ -208,7 +208,7 @@ pub(crate) fn prepare(
         let chunk_uniform: TilemapUniformData = chunk.into();
 
         commands.spawn((
-            chunk.texture.clone_weak(),
+            chunk.texture.clone(),
             chunk.get_transform(),
             ChunkId(chunk.get_index()),
             chunk.get_map_type(),

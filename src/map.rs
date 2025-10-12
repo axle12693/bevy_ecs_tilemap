@@ -206,18 +206,6 @@ impl TilemapTexture {
             };
         }
     }
-
-    pub fn clone_weak(&self) -> Self {
-        match self {
-            TilemapTexture::Single(handle) => TilemapTexture::Single(handle.clone()),
-            #[cfg(not(feature = "atlas"))]
-            TilemapTexture::Vector(handles) => TilemapTexture::Vector(handles.to_vec()),
-            #[cfg(not(feature = "atlas"))]
-            TilemapTexture::TextureContainer(handle) => {
-                TilemapTexture::TextureContainer(handle.clone())
-            }
-        }
-    }
 }
 
 /// Size of the tiles in pixels
